@@ -6,10 +6,19 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
-  outputs = inputs:
+  outputs =
+    inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" ];
-      perSystem = { config, self', pkgs, lib, system, ... }:
+      perSystem =
+        {
+          config,
+          self',
+          pkgs,
+          lib,
+          system,
+          ...
+        }:
         let
           runtimeDeps = with pkgs; [
           ];
@@ -28,8 +37,7 @@
             cargo-msrv
             cargo-nextest
             cargo-watch
-            (cargo-whatfeatures.overrideAttrs (oldAttrs: rec
-            {
+            (cargo-whatfeatures.overrideAttrs (oldAttrs: rec {
               pname = "cargo-whatfeatures";
               version = "0.9.13";
               src = fetchFromGitHub {
@@ -38,11 +46,13 @@
                 rev = "v0.9.13";
                 sha256 = "sha256-YJ08oBTn9OwovnTOuuc1OuVsQp+/TPO3vcY4ybJ26Ms=";
               };
-              cargoDeps = oldAttrs.cargoDeps.overrideAttrs (lib.const {
-                name = "${pname}-vendor.tar.gz";
-                inherit src;
-                outputHash = "sha256-8pccXL+Ud3ufYcl2snoSxIfGM1tUR53GUrIp397Rh3o=";
-              });
+              cargoDeps = oldAttrs.cargoDeps.overrideAttrs (
+                lib.const {
+                  name = "${pname}-vendor.tar.gz";
+                  inherit src;
+                  outputHash = "sha256-8pccXL+Ud3ufYcl2snoSxIfGM1tUR53GUrIp397Rh3o=";
+                }
+              );
               cargoBuildFlags = [
                 "--no-default-features"
                 "--features=rustls"
@@ -54,8 +64,7 @@
             lld
             lldb
             nushell
-            (surrealdb.overrideAttrs (oldAttrs: rec
-            {
+            (surrealdb.overrideAttrs (oldAttrs: rec {
               pname = "surrealdb";
               version = "2.0.0";
               src = fetchFromGitHub {
@@ -64,15 +73,16 @@
                 rev = "v2.0.0-alpha.10";
                 sha256 = "sha256-PYZHPQ/PqdaWEvhp5Iu0O8FmyWCZlB2TlCyI9ofWHzQ=";
               };
-              cargoDeps = oldAttrs.cargoDeps.overrideAttrs (lib.const {
-                name = "${pname}-vendor.tar.gz";
-                inherit src;
-                outputHash = "sha256-L14D5Cf5kDpfNiRS28a8uprTiuIsys5srgR7Ah0wgic=";
-              });
+              cargoDeps = oldAttrs.cargoDeps.overrideAttrs (
+                lib.const {
+                  name = "${pname}-vendor.tar.gz";
+                  inherit src;
+                  outputHash = "sha256-L14D5Cf5kDpfNiRS28a8uprTiuIsys5srgR7Ah0wgic=";
+                }
+              );
               cargoBuildFlags = [
               ];
-            }
-            ))
+            }))
             panamax
             sass
             tailwindcss
@@ -81,26 +91,30 @@
           cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
           msrv = cargoToml.package.rust-version;
 
-          rustPackage = features:
+          rustPackage =
+            features:
             (pkgs.makeRustPlatform {
               cargo = pkgs.rust-bin.stable.latest.minimal;
               rustc = pkgs.rust-bin.stable.latest.minimal;
-            }).buildRustPackage {
-              inherit (cargoToml.package) name version;
-              src = ./.;
-              cargoLock.lockFile = ./Cargo.lock;
-              buildFeatures = features;
-              buildInputs = runtimeDeps;
-              nativeBuildInputs = buildDeps;
-              # Uncomment if your cargo tests require networking or otherwise
-              # don't play nicely with the nix build sandbox:
-              # doCheck = false;
-            };
+            }).buildRustPackage
+              {
+                inherit (cargoToml.package) name version;
+                src = ./.;
+                cargoLock.lockFile = ./Cargo.lock;
+                buildFeatures = features;
+                buildInputs = runtimeDeps;
+                nativeBuildInputs = buildDeps;
+                # Uncomment if your cargo tests require networking or otherwise
+                # don't play nicely with the nix build sandbox:
+                # doCheck = false;
+              };
 
-          mkDevShell = rustc:
+          mkDevShell =
+            rustc:
             pkgs.mkShell {
               shellHook = ''
-                exec zellij --layout ./zellij_layout.kdl
+                # TODO: figure out if it's possible to remove this or allow a user's preferred shell
+                exec env SHELL=${pkgs.bashInteractive}/bin/bash zellij --layout ./zellij_layout.kdl
               '';
               LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
               RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
@@ -109,14 +123,15 @@
             };
         in
         {
-          _module.args.pkgs = import inputs.nixpkgs
-            {
-              inherit system;
-              overlays = [ (import inputs.rust-overlay) ];
-              config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [ (import inputs.rust-overlay) ];
+            config.allowUnfreePredicate =
+              pkg:
+              builtins.elem (lib.getName pkg) [
                 "surrealdb"
               ];
-            };
+          };
 
           packages.default = self'.packages.base;
           devShells.default = self'.devShells.stable;
@@ -125,16 +140,39 @@
           packages.bunyan = (rustPackage "bunyan");
           packages.tokio-console = (rustPackage "tokio-console");
 
-          devShells.nightly = (mkDevShell (pkgs.rust-bin.selectLatestNightlyWith
-            (toolchain: toolchain.default.override {
-              extensions = [ "rust-src" "rust-analyzer" ];
-            })));
-          devShells.stable = (mkDevShell (pkgs.rust-bin.stable.latest.default.override {
-            extensions = [ "rust-src" "rust-analyzer" ];
-          }));
-          devShells.msrv = (mkDevShell (pkgs.rust-bin.stable.${msrv}.default.override {
-            extensions = [ "rust-src" "rust-analyzer" ];
-          }));
+          devShells.nightly = (
+            mkDevShell (
+              pkgs.rust-bin.selectLatestNightlyWith (
+                toolchain:
+                toolchain.default.override {
+                  extensions = [
+                    "rust-src"
+                    "rust-analyzer"
+                  ];
+                }
+              )
+            )
+          );
+          devShells.stable = (
+            mkDevShell (
+              pkgs.rust-bin.stable.latest.default.override {
+                extensions = [
+                  "rust-src"
+                  "rust-analyzer"
+                ];
+              }
+            )
+          );
+          devShells.msrv = (
+            mkDevShell (
+              pkgs.rust-bin.stable.${msrv}.default.override {
+                extensions = [
+                  "rust-src"
+                  "rust-analyzer"
+                ];
+              }
+            )
+          );
         };
     };
 }
