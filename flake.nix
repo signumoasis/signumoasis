@@ -20,15 +20,89 @@
           ...
         }:
         let
+          enableAndroid = true;
+
+          # INFO: Uncomment this block to enable Android compilation target
+          androidSdk =
+            let
+              androidComposition = pkgs.androidenv.composeAndroidPackages {
+                cmdLineToolsVersion = "13.0";
+                # INFO: toolsVersion is unused because the tools package is deprecated
+                # toolsVersion = "26.1.1";
+                platformToolsVersion = "35.0.2";
+                buildToolsVersions = [
+                  "34.0.0"
+                  "35.0.0"
+                ];
+                includeEmulator = true;
+                emulatorVersion = "35.1.4";
+                platformVersions = [
+                  "33"
+                ];
+                includeSources = false;
+                includeSystemImages = true;
+                systemImageTypes = [ "google_apis_playstore" ];
+                abiVersions = [
+                  "x86_64"
+                  # "armeabi-v7a"
+                  # "arm64-v8a"
+                ];
+                cmakeVersions = [ "3.6.4111459" ];
+                includeNDK = true;
+                ndkVersions = [ "27.0.12077973" ];
+                useGoogleAPIs = true;
+                useGoogleTVAddOns = false;
+                includeExtras = [
+                  "extras;google;gcm"
+                ];
+              };
+            in
+            androidComposition.androidsdk;
+
+          androidDeps = with pkgs; [
+            androidSdk
+            mesa
+            openjdk
+          ];
+
+          dioxusDeps = with pkgs; [
+            atkmm
+            fontconfig
+            fribidi
+            gdk-pixbuf
+            glib
+            gtk3
+            gsettings-desktop-schemas # Doesn't fix appimage bundle issue
+            harfbuzz
+            freetype
+            libdrm
+            libGL
+            libgpg-error
+            openssl
+            stdenv.cc.cc.lib
+            wrapGAppsHook
+            webkitgtk_4_1
+            xdotool
+            xorg.libX11
+            xorg.libxcb
+            zlib
+          ];
+
           runtimeDeps = with pkgs; [
           ];
-          buildDeps = with pkgs; [
-            clang
-            lld
-            lldb
-            pkg-config
-            rustPlatform.bindgenHook
-          ];
+
+          buildDeps =
+            with pkgs;
+            [
+              clang
+              lld
+              lldb
+              pkg-config
+              rustPlatform.bindgenHook
+            ]
+            ++ (if enableAndroid then androidDeps else [ ])
+            ++ dioxusDeps;
+
           devDeps = with pkgs; [
             bunyan-rs
             cargo-deny
@@ -59,6 +133,7 @@
               ];
             }))
             clang
+            dioxus-cli
             just
             gdb
             lld
@@ -109,6 +184,44 @@
                 # doCheck = false;
               };
 
+          mkDevShellNoZellij =
+            rustc:
+            pkgs.mkShell {
+              shellHook = ''
+                # TODO: figure out if it's possible to remove this or allow a user's preferred shell
+                # exec env SHELL=${pkgs.bashInteractive}/bin/bash
+              '';
+              LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
+              RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+              buildInputs = runtimeDeps;
+              nativeBuildInputs = buildDeps ++ devDeps ++ [ rustc ];
+            };
+          ldpath =
+            with pkgs;
+            [
+              stdenv.cc.cc.lib
+            ]
+            ++ (
+              if enableAndroid then
+                [
+                  fontconfig
+                  fribidi
+                  glib
+                  gsettings-desktop-schemas
+                  harfbuzz
+                  freetype
+                  libdrm
+                  libGL
+                  libgpg-error
+                  mesa
+                  xorg.libX11
+                  xorg.libxcb
+                  zlib
+                ]
+              else
+                [ ]
+            );
+
           mkDevShell =
             rustc:
             pkgs.mkShell {
@@ -116,21 +229,40 @@
                 # TODO: figure out if it's possible to remove this or allow a user's preferred shell
                 exec env SHELL=${pkgs.bashInteractive}/bin/bash zellij --layout ./zellij_layout.kdl
               '';
-              LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
+              LD_LIBRARY_PATH = lib.makeLibraryPath ldpath;
+              #Include these to enable Android
+              ANDROID_HOME = if enableAndroid then "${androidSdk}/libexec/android-sdk" else "";
+              ANDROID_NDK_HOME = if enableAndroid then "${androidSdk}/libexec/android-sdk/ndk-bundle" else "";
+
               RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
               buildInputs = runtimeDeps;
               nativeBuildInputs = buildDeps ++ devDeps ++ [ rustc ];
             };
         in
         {
+
           _module.args.pkgs = import inputs.nixpkgs {
             inherit system;
             overlays = [ (import inputs.rust-overlay) ];
-            config.allowUnfreePredicate =
-              pkg:
-              builtins.elem (lib.getName pkg) [
-                "surrealdb"
-              ];
+            config = {
+              allowUnfreePredicate =
+                pkg:
+                builtins.elem (lib.getName pkg) (
+                  [
+                    "surrealdb"
+                  ]
+                  ++ (
+                    if enableAndroid then
+                      [
+                        "android-sdk-tools"
+                        "android-sdk-cmdline-tools"
+                      ]
+                    else
+                      [ ]
+                  )
+                );
+              android_sdk.accept_license = true;
+            };
           };
 
           packages.default = self'.packages.base;
@@ -155,6 +287,16 @@
           );
           devShells.stable = (
             mkDevShell (
+              pkgs.rust-bin.stable.latest.default.override {
+                extensions = [
+                  "rust-src"
+                  "rust-analyzer"
+                ];
+              }
+            )
+          );
+          devShells.nozellij = (
+            mkDevShellNoZellij (
               pkgs.rust-bin.stable.latest.default.override {
                 extensions = [
                   "rust-src"
