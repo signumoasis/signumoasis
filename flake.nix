@@ -20,9 +20,8 @@
           ...
         }:
         let
-          enableAndroid = true;
+          enableAndroid = false;
 
-          # INFO: Uncomment this block to enable Android compilation target
           androidSdk =
             let
               androidComposition = pkgs.androidenv.composeAndroidPackages {
