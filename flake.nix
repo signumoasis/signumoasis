@@ -5,7 +5,7 @@
     };
     flake-parts.url = "github:hercules-ci/flake-parts";
     rust-overlay.url = "github:oxalica/rust-overlay";
-    surrealdb-gh.url = "github:surrealdb/surrealdb/v2.0.4";
+    surrealdb-gh.url = "github:surrealdb/surrealdb/v2.1.4";
   };
   outputs =
     inputs:
