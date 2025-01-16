@@ -5,6 +5,7 @@
     };
     flake-parts.url = "github:hercules-ci/flake-parts";
     rust-overlay.url = "github:oxalica/rust-overlay";
+    surrealdb-gh.url = "github:surrealdb/surrealdb/v2.0.4";
   };
   outputs =
     inputs:
@@ -102,65 +103,51 @@
             ++ (if enableAndroid then androidDeps else [ ])
             ++ dioxusDeps;
 
-          devDeps = with pkgs; [
-            bunyan-rs
-            cargo-deny
-            cargo-edit
-            cargo-expand
-            cargo-msrv
-            cargo-nextest
-            cargo-watch
-            (cargo-whatfeatures.overrideAttrs (oldAttrs: rec {
-              pname = "cargo-whatfeatures";
-              version = "0.9.13";
-              src = fetchFromGitHub {
-                owner = "museun";
-                repo = "cargo-whatfeatures";
-                rev = "v0.9.13";
-                sha256 = "sha256-YJ08oBTn9OwovnTOuuc1OuVsQp+/TPO3vcY4ybJ26Ms=";
-              };
-              cargoDeps = oldAttrs.cargoDeps.overrideAttrs (
-                lib.const {
-                  name = "${pname}-vendor.tar.gz";
-                  inherit src;
-                  outputHash = "sha256-8pccXL+Ud3ufYcl2snoSxIfGM1tUR53GUrIp397Rh3o=";
-                }
-              );
-              cargoBuildFlags = [
-                "--no-default-features"
-                "--features=rustls"
-              ];
-            }))
-            clang
-            dioxus-cli
-            just
-            gdb
-            lld
-            lldb
-            nushell
-            (surrealdb.overrideAttrs (oldAttrs: rec {
-              pname = "surrealdb";
-              version = "2.0.0";
-              src = fetchFromGitHub {
-                owner = "surrealdb";
-                repo = "surrealdb";
-                rev = "v2.0.0-alpha.10";
-                sha256 = "sha256-PYZHPQ/PqdaWEvhp5Iu0O8FmyWCZlB2TlCyI9ofWHzQ=";
-              };
-              cargoDeps = oldAttrs.cargoDeps.overrideAttrs (
-                lib.const {
-                  name = "${pname}-vendor.tar.gz";
-                  inherit src;
-                  outputHash = "sha256-L14D5Cf5kDpfNiRS28a8uprTiuIsys5srgR7Ah0wgic=";
-                }
-              );
-              cargoBuildFlags = [
-              ];
-            }))
-            panamax
-            sass
-            tailwindcss
-          ];
+          devDeps =
+            with pkgs;
+            [
+              bunyan-rs
+              cargo-deny
+              cargo-edit
+              cargo-expand
+              cargo-msrv
+              cargo-nextest
+              cargo-watch
+              (cargo-whatfeatures.overrideAttrs (oldAttrs: rec {
+                pname = "cargo-whatfeatures";
+                version = "0.9.13";
+                src = fetchFromGitHub {
+                  owner = "museun";
+                  repo = "cargo-whatfeatures";
+                  rev = "v0.9.13";
+                  sha256 = "sha256-YJ08oBTn9OwovnTOuuc1OuVsQp+/TPO3vcY4ybJ26Ms=";
+                };
+                cargoDeps = oldAttrs.cargoDeps.overrideAttrs (
+                  lib.const {
+                    name = "${pname}-vendor.tar.gz";
+                    inherit src;
+                    outputHash = "sha256-8pccXL+Ud3ufYcl2snoSxIfGM1tUR53GUrIp397Rh3o=";
+                  }
+                );
+                cargoBuildFlags = [
+                  "--no-default-features"
+                  "--features=rustls"
+                ];
+              }))
+              clang
+              dioxus-cli
+              just
+              gdb
+              lld
+              lldb
+              nushell
+              panamax
+              sass
+              tailwindcss
+            ]
+            ++ [
+              inputs.surrealdb-gh.packages.${system}.default
+            ];
 
           cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
           msrv = cargoToml.package.rust-version;
