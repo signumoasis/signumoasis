@@ -68,10 +68,13 @@ impl DatabaseSettings {
         let db = any::connect(&self.filename).await?;
         // let db = any::connect(format!("speedb:{}", self.filename)).await?;
 
-        if !self.filename.starts_with("file:") && !&self.filename.starts_with("mem:") {
+        if !self.filename.starts_with("surrealkv:")
+            && !self.filename.starts_with("rocksdb:")
+            && !&self.filename.starts_with("mem:")
+        {
             db.signin(Root {
-                username: "root",
-                password: "root",
+                username: "signum",
+                password: "signum",
             })
             .await?;
         }

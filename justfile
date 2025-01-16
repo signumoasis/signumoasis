@@ -43,4 +43,4 @@ tokioconsole level=LOG_LEVEL:
 
 # run the surrealdb server for development
 surrealdb:
-    surreal start --allow-all --bind 127.0.0.1:8001 file://signum.surrealdb
+    surreal start --allow-all --bind 127.0.0.1:8001 --username signum --password signum rocksdb://signum.surrealdb
