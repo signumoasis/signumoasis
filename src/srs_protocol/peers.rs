@@ -7,7 +7,7 @@ use reqwest::Response;
 use serde_json::{json, Value};
 
 use crate::{
-    models::{datastore::Datastore, Block},
+    chain::models::{datastore::Datastore, Block},
     oasis_protocol::oasis_peer::OasisPeer,
     srs_protocol::{
         b1_peer::B1Peer,

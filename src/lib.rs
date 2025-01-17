@@ -2,15 +2,11 @@ use actix_web::HttpResponse;
 use itertools::Itertools;
 
 pub mod configuration;
-pub mod flux_capacitor;
-pub mod models;
 pub mod telemetry;
-pub mod workers;
 
-mod historical_moments;
+pub mod chain;
 pub mod oasis_protocol;
 pub mod srs_protocol;
-pub use historical_moments::*;
 
 pub fn error_chain_fmt(
     e: &impl std::error::Error,

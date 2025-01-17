@@ -7,7 +7,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::{
-    models::Block,
+    chain::models::Block,
     srs_protocol::models::{b1_block::B1Block, peer_address::PeerAddress, peer_info::PeerInfo},
 };
 

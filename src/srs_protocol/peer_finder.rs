@@ -5,8 +5,8 @@ use tracing::Instrument;
 use uuid::Uuid;
 
 use crate::{
+    chain::models::datastore::Datastore,
     configuration::Settings,
-    models::datastore::Datastore,
     srs_protocol::{
         b1_peer::B1Peer,
         peers::{update_db_peer_info, BasicPeerClient},

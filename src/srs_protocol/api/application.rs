@@ -8,9 +8,9 @@ use actix_web::{
 use tracing_actix_web::TracingLogger;
 
 use crate::{
+    chain::models::datastore::Datastore,
     configuration::{PeerToPeerSettings, Settings},
     health_check,
-    models::datastore::Datastore,
 };
 
 use super::signum_api_handler;
