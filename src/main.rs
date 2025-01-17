@@ -48,22 +48,22 @@ async fn start() -> Result<()> {
     //));
 
     // Create the p2p api webserver task
-    let p2p_api = SrsApiApplication::build(configuration.clone(), database.clone()).await?;
-    let p2p_api_task = tokio::spawn(p2p_api.run_until_stopped());
+    //let p2p_api = SrsApiApplication::build(configuration.clone(), database.clone()).await?;
+    //let p2p_api_task = tokio::spawn(p2p_api.run_until_stopped());
 
     // Create the peer finder task
-    let peer_finder_task = tokio::spawn(run_peer_finder_forever(database.clone(), configuration));
+    //let peer_finder_task = tokio::spawn(run_peer_finder_forever(database.clone(), configuration));
 
     // Create the peer info trader task
-    let peer_info_trader_task = tokio::spawn(run_peer_info_trader_forever(database));
+    //let peer_info_trader_task = tokio::spawn(run_peer_info_trader_forever(database));
 
     // Select on all the tasks to report closure status
-    tokio::select! {
-        //o = block_downloader_task=> report_exit("Block Downloader", o),
-        o = p2p_api_task => report_exit("P2P API Server", o),
-        o = peer_finder_task => report_exit("Peer Finder", o),
-        o = peer_info_trader_task => report_exit("Peer Info Trader", o),
-    };
+    //tokio::select! {
+    //    o = block_downloader_task=> report_exit("Block Downloader", o),
+    //    o = p2p_api_task => report_exit("P2P API Server", o),
+    //    o = peer_finder_task => report_exit("Peer Finder", o),
+    //    o = peer_info_trader_task => report_exit("Peer Info Trader", o),
+    //};
 
     Ok(())
 }
