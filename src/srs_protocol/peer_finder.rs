@@ -7,7 +7,10 @@ use uuid::Uuid;
 use crate::{
     configuration::Settings,
     models::datastore::Datastore,
-    peers::{update_db_peer_info, B1Peer, BasicPeerClient},
+    srs_protocol::{
+        b1_peer::B1Peer,
+        peers::{update_db_peer_info, BasicPeerClient},
+    },
 };
 
 #[tracing::instrument(skip_all)]

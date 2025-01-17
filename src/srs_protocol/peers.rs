@@ -1,10 +1,4 @@
-mod b1_peer;
-mod oasis_peer;
-
 use std::{str::FromStr, time::Duration};
-
-pub use b1_peer::B1Peer;
-pub use oasis_peer::OasisPeer;
 
 use actix_web::ResponseError;
 use anyhow::{Context, Result};
@@ -12,10 +6,13 @@ use num_bigint::BigUint;
 use reqwest::Response;
 use serde_json::{json, Value};
 
-use crate::models::{
-    datastore::Datastore,
-    p2p::{PeerAddress, PeerInfo},
-    Block,
+use crate::{
+    models::{datastore::Datastore, Block},
+    oasis_protocol::oasis_peer::OasisPeer,
+    srs_protocol::{
+        b1_peer::B1Peer,
+        models::{peer_address::PeerAddress, peer_info::PeerInfo},
+    },
 };
 
 // TODO: Move this to models or something

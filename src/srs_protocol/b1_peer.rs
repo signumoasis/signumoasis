@@ -6,32 +6,21 @@ use reqwest::Response;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-use crate::models::{
-    p2p::{B1Block, PeerAddress, PeerInfo},
-    Block,
+use crate::{
+    models::Block,
+    srs_protocol::models::{b1_block::B1Block, peer_address::PeerAddress, peer_info::PeerInfo},
 };
 
-use super::{BasicPeerClient, DownloadResult, PeerCommunicationError};
+use super::peers::{BasicPeerClient, DownloadResult, PeerCommunicationError};
 
-// TODO: Refactor this to use GRPC and actually handle other oasis peers. Right now it's just a B1Peer clone
-#[derive(Debug, Default)]
-pub struct OasisPeer {
+#[derive(Debug)]
+pub struct B1Peer {
     peer: PeerAddress,
-    pub announced_address: Option<PeerAddress>,
-    pub application: String,
-    pub version: String,
-    pub platform: Option<String>,
-    pub share_address: bool,
-    pub network_name: String,
-    pub oasis_info: OasisPeerInfo,
 }
 
-impl OasisPeer {
+impl B1Peer {
     pub fn new(peer: PeerAddress) -> Self {
-        Self {
-            peer,
-            ..Default::default()
-        }
+        Self { peer }
     }
 
     pub async fn post_peer_request(
@@ -49,7 +38,7 @@ impl OasisPeer {
     }
 }
 
-impl BasicPeerClient for OasisPeer {
+impl BasicPeerClient for B1Peer {
     fn address(&self) -> PeerAddress {
         self.peer.clone()
     }
@@ -173,9 +162,4 @@ impl BasicPeerClient for OasisPeer {
     async fn get_peer_info(&self) -> Result<(PeerInfo, String), PeerCommunicationError> {
         todo!()
     }
-}
-
-#[derive(Debug, Default, Deserialize)]
-pub struct OasisPeerInfo {
-    some_thing: String,
 }

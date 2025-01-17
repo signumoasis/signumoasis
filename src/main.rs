@@ -4,12 +4,11 @@ use anyhow::Result;
 
 use signum_node_rs::{
     configuration::get_configuration,
-    srs_api::SrsApiApplication,
-    telemetry::{get_subscriber, init_subscriber},
-    workers::{
-        block_downloader::run_block_downloader_forever, peer_finder::run_peer_finder_forever,
+    srs_protocol::{
+        api::SrsApiApplication, peer_finder::run_peer_finder_forever,
         peer_info_trader::run_peer_info_trader_forever,
     },
+    telemetry::{get_subscriber, init_subscriber},
 };
 use tokio::task::JoinError;
 
@@ -33,11 +32,20 @@ async fn start() -> Result<()> {
 
     let database = configuration.database.get_db().await?;
 
+    // TODO: Create these:
+    // 1. A top-level webserver with dioxus
+    // 2. Create routes for non-protocol APIs not managed by dioxus
+    // 2. Configure plugin protocol routes to the webserver
+    // 3. Start the main web server
+    // 4. Create chain and protocol tasks/actors
+    // 5. Start chain task, passing messaging addresses for protocols
+    // 6. Start protocol tasks, passing chain message address
+
     // Create the Block Downloader task
-    let block_downloader_task = tokio::spawn(run_block_downloader_forever(
-        database.clone(),
-        configuration.clone(),
-    ));
+    //let block_downloader_task = tokio::spawn(run_block_downloader_forever(
+    //    database.clone(),
+    //    configuration.clone(),
+    //));
 
     // Create the p2p api webserver task
     let p2p_api = SrsApiApplication::build(configuration.clone(), database.clone()).await?;
@@ -51,7 +59,7 @@ async fn start() -> Result<()> {
 
     // Select on all the tasks to report closure status
     tokio::select! {
-        o = block_downloader_task=> report_exit("Block Downloader", o),
+        //o = block_downloader_task=> report_exit("Block Downloader", o),
         o = p2p_api_task => report_exit("P2P API Server", o),
         o = peer_finder_task => report_exit("Peer Finder", o),
         o = peer_info_trader_task => report_exit("Peer Info Trader", o),

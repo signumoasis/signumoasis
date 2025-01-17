@@ -7,11 +7,12 @@ use uuid::Uuid;
 
 use crate::{
     configuration::Settings,
-    models::{
-        datastore::Datastore,
-        p2p::{B1Block, PeerAddress},
+    models::datastore::Datastore,
+    srs_protocol::{
+        b1_peer::B1Peer,
+        models::{b1_block::B1Block, peer_address::PeerAddress},
+        peers::{BasicPeerClient, DownloadResult},
     },
-    peers::{B1Peer, BasicPeerClient, DownloadResult},
     statistics_mode,
 };
 

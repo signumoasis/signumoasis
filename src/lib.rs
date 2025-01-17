@@ -4,12 +4,12 @@ use itertools::Itertools;
 pub mod configuration;
 pub mod flux_capacitor;
 pub mod models;
-pub mod peers;
-pub mod srs_api;
 pub mod telemetry;
 pub mod workers;
 
 mod historical_moments;
+pub mod oasis_protocol;
+pub mod srs_protocol;
 pub use historical_moments::*;
 
 pub fn error_chain_fmt(

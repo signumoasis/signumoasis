@@ -7,7 +7,7 @@ use surrealdb::{
     Surreal,
 };
 
-use crate::models::{datastore::Datastore, p2p::PeerAddress};
+use crate::{models::datastore::Datastore, srs_protocol::models::peer_address::PeerAddress};
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     // Get the base execution director

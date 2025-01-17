@@ -1,6 +1,7 @@
-use crate::models::p2p::B1Transaction;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
+
+use super::b1_transaction::B1Transaction;
 
 #[serde_as]
 #[derive(Debug, Deserialize, Serialize)]

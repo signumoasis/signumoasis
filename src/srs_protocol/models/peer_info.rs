@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use super::PeerAddress;
+use super::peer_address::PeerAddress;
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]

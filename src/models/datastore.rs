@@ -8,7 +8,7 @@ use surrealdb::{
     Response, Surreal,
 };
 
-use super::p2p::{PeerAddress, PeerInfo};
+use crate::srs_protocol::models::{peer_address::PeerAddress, peer_info::PeerInfo};
 
 #[derive(Clone, Debug)]
 pub struct Datastore {

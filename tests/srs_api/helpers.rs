@@ -2,7 +2,7 @@ use once_cell::sync::Lazy;
 use signum_node_rs::{
     configuration::get_configuration,
     models::datastore::Datastore,
-    srs_api::SrsApiApplication,
+    srs_protocol::api::SrsApiApplication,
     telemetry::{get_subscriber, init_subscriber},
 };
 

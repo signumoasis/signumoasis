@@ -48,7 +48,7 @@ impl FromStr for PeerAddress {
 
 #[cfg(test)]
 mod test {
-    use crate::models::p2p::PeerAddress;
+    use super::PeerAddress;
 
     #[test]
     fn peer_address_fromstr_succeeds_for_valid_urls() {

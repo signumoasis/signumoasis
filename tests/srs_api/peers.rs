@@ -1,5 +1,5 @@
 use anyhow::Context;
-use signum_node_rs::srs_api::request_models::GetInfoRequestModel;
+use signum_node_rs::srs_protocol::api::request_models::GetInfoRequestModel;
 
 use crate::helpers::spawn_app;
 
