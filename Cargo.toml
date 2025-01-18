@@ -5,12 +5,12 @@ authors = ["damccull <401104+damccull@users.noreply.github.com>"]
 edition = "2021"
 rust-version = "1.84.0"
 
-[lib]
-path = "src/lib.rs"
-
-[[bin]]
-path = "src/main.rs"
-name = "signum-node-rs"
+# [lib]
+# path = "src/lib.rs"
+#
+# [[bin]]
+# path = "src/main.rs"
+# name = "signum-node-rs"
 
 [features]
 default = ["web"]
@@ -38,3 +38,8 @@ inherits = "dev"
 
 [profile.android-dev]
 inherits = "dev"
+
+
+# Enable if openssl doesn't compile for android
+# [target.'cfg(target_os = "android")'.dependencies]
+# openssl = { version = "*", features = ["vendored"] }

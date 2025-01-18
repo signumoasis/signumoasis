@@ -12,8 +12,8 @@ layout {
           command "lazygit"
         }
         pane size="40%" {
-          command "cargo"
-          args "watch" "-x" "test" "-x" "run"
+          // command "cargo"
+          // args "watch" "-x" "test" "-x" "run"
         }
       }
     }
