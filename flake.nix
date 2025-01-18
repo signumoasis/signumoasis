@@ -79,7 +79,6 @@
             libGL
             libgpg-error
             openssl
-            stdenv.cc.cc.lib
             wrapGAppsHook
             webkitgtk_4_1
             xdotool
@@ -99,9 +98,10 @@
               lldb
               pkg-config
               rustPlatform.bindgenHook
+              stdenv.cc.cc.lib
             ]
-            ++ (if enableAndroid then androidDeps else [ ])
-            ++ dioxusDeps;
+            ++ dioxusDeps
+            ++ (if enableAndroid then androidDeps else [ ]);
 
           devDeps =
             with pkgs;
