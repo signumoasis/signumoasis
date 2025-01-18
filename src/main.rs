@@ -14,6 +14,8 @@ use tokio::task::JoinError;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // TODO: Get dioxus started here with tracing set up for my own code as well
+
     // Begin by setting up tracing
     let subscriber = get_subscriber("signum-node-rs".into(), "info".into(), std::io::stdout);
     init_subscriber(subscriber);
@@ -21,8 +23,7 @@ async fn main() -> Result<()> {
     start().await
 }
 
-//pub static CONFIGURATION: Settings = configuration::get_configuration();
-
+// TODO: Move this to a backend.rs or server.rs, etc. for easy cfg setup
 #[tracing::instrument]
 async fn start() -> Result<()> {
     let configuration =
