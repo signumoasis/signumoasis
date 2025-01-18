@@ -224,6 +224,18 @@
               buildInputs = runtimeDeps;
               nativeBuildInputs = buildDeps ++ devDeps ++ [ rustc ];
             };
+
+          rustTargets = [
+            "x86_64-unknown-linux-gnu"
+            "x86_64-linux-android"
+            "aarch64-linux-android"
+            "wasm32-unknown-unknown"
+          ];
+
+          rustExtensions = [
+            "rust-analyzer"
+            "rust-src"
+          ];
         in
         {
 
@@ -263,10 +275,8 @@
               pkgs.rust-bin.selectLatestNightlyWith (
                 toolchain:
                 toolchain.default.override {
-                  extensions = [
-                    "rust-src"
-                    "rust-analyzer"
-                  ];
+                  extensions = rustExtensions;
+                  targets = rustTargets;
                 }
               )
             )
@@ -274,30 +284,24 @@
           devShells.stable = (
             mkDevShell (
               pkgs.rust-bin.stable.latest.default.override {
-                extensions = [
-                  "rust-src"
-                  "rust-analyzer"
-                ];
+                extensions = rustExtensions;
+                targets = rustTargets;
               }
             )
           );
           devShells.nozellij = (
             mkDevShellNoZellij (
               pkgs.rust-bin.stable.latest.default.override {
-                extensions = [
-                  "rust-src"
-                  "rust-analyzer"
-                ];
+                extensions = rustExtensions;
+                targets = rustTargets;
               }
             )
           );
           devShells.msrv = (
             mkDevShell (
               pkgs.rust-bin.stable.${msrv}.default.override {
-                extensions = [
-                  "rust-src"
-                  "rust-analyzer"
-                ];
+                extensions = rustExtensions;
+                targets = rustTargets;
               }
             )
           );
