@@ -61,7 +61,6 @@
 
           androidDeps = with pkgs; [
             androidSdk
-            mesa
             openjdk
           ];
 
@@ -71,6 +70,7 @@
             fribidi
             gdk-pixbuf
             glib
+            glib-networking
             gtk3
             gsettings-desktop-schemas # Doesn't fix appimage bundle issue
             harfbuzz
@@ -78,6 +78,7 @@
             libdrm
             libGL
             libgpg-error
+            mesa
             openssl
             wrapGAppsHook
             webkitgtk_4_1
@@ -106,6 +107,9 @@
           devDeps =
             with pkgs;
             [
+              # Libraries and programs needed for dev work; included in dev shell
+              # NOT included in the nix build operation
+              bashInteractive
               bunyan-rs
               cargo-deny
               cargo-edit
@@ -134,16 +138,13 @@
                   "--features=rustls"
                 ];
               }))
-              clang
               dioxus-cli
-              just
               gdb
-              lld
-              lldb
+              just
               nushell
               panamax
-              sass
               tailwindcss
+              zellij
             ]
             ++ [
               inputs.surrealdb-gh.packages.${system}.default
@@ -175,21 +176,7 @@
             [
               stdenv.cc.cc.lib
             ]
-            ++ [
-              fontconfig
-              fribidi
-              glib
-              gsettings-desktop-schemas
-              harfbuzz
-              freetype
-              libdrm
-              libGL
-              libgpg-error
-              mesa
-              xorg.libX11
-              xorg.libxcb
-              zlib
-            ];
+            ++ dioxusDeps;
 
           mkDevShell =
             rustc:
