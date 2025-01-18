@@ -170,43 +170,26 @@
                 # doCheck = false;
               };
 
-          mkDevShellNoZellij =
-            rustc:
-            pkgs.mkShell {
-              shellHook = ''
-                # TODO: figure out if it's possible to remove this or allow a user's preferred shell
-                # exec env SHELL=${pkgs.bashInteractive}/bin/bash
-              '';
-              LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
-              RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
-              buildInputs = runtimeDeps;
-              nativeBuildInputs = buildDeps ++ devDeps ++ [ rustc ];
-            };
           ldpath =
             with pkgs;
             [
               stdenv.cc.cc.lib
             ]
-            ++ (
-              if enableAndroid then
-                [
-                  fontconfig
-                  fribidi
-                  glib
-                  gsettings-desktop-schemas
-                  harfbuzz
-                  freetype
-                  libdrm
-                  libGL
-                  libgpg-error
-                  mesa
-                  xorg.libX11
-                  xorg.libxcb
-                  zlib
-                ]
-              else
-                [ ]
-            );
+            ++ [
+              fontconfig
+              fribidi
+              glib
+              gsettings-desktop-schemas
+              harfbuzz
+              freetype
+              libdrm
+              libGL
+              libgpg-error
+              mesa
+              xorg.libX11
+              xorg.libxcb
+              zlib
+            ];
 
           mkDevShell =
             rustc:
@@ -216,9 +199,10 @@
                 exec env SHELL=${pkgs.bashInteractive}/bin/bash zellij --layout ./zellij_layout.kdl
               '';
               LD_LIBRARY_PATH = lib.makeLibraryPath ldpath;
-              #Include these to enable Android
+
               ANDROID_HOME = if enableAndroid then "${androidSdk}/libexec/android-sdk" else "";
               ANDROID_NDK_HOME = if enableAndroid then "${androidSdk}/libexec/android-sdk/ndk-bundle" else "";
+
 
               RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
               buildInputs = runtimeDeps;
@@ -283,14 +267,6 @@
           );
           devShells.stable = (
             mkDevShell (
-              pkgs.rust-bin.stable.latest.default.override {
-                extensions = rustExtensions;
-                targets = rustTargets;
-              }
-            )
-          );
-          devShells.nozellij = (
-            mkDevShellNoZellij (
               pkgs.rust-bin.stable.latest.default.override {
                 extensions = rustExtensions;
                 targets = rustTargets;
