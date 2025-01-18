@@ -203,6 +203,7 @@
               ANDROID_HOME = if enableAndroid then "${androidSdk}/libexec/android-sdk" else "";
               ANDROID_NDK_HOME = if enableAndroid then "${androidSdk}/libexec/android-sdk/ndk-bundle" else "";
 
+              GIO_MODULE_DIR = "${pkgs.glib-networking}/lib/gio/modules/";
 
               RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
               buildInputs = runtimeDeps;
