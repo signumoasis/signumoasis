@@ -20,7 +20,7 @@ server = ["dioxus/server"]
 web = ["dioxus/web"]
 
 [dependencies]
-axum = "0.8.1"
+axum = "0.7"
 dioxus = { version = "0.6.0", features = ["fullstack", "router"] }
 dioxus-web = "0.6.0"
 dioxus-fullstack = { version="0.6.0", features = ["axum"] }
