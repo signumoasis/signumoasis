@@ -1,5 +1,4 @@
 **/target
-.vscode/
 **.surrealdb
 **/*.db3*
 result
