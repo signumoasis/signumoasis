@@ -1,0 +1,7 @@
+[rust-analyzer]
+checkOnSave = { command = "clippy" }
+cargo = { features = ["web", "server", "desktop"]}
+
+[rust-analyzer.lens]
+enable = true
+run = "cargo check"
