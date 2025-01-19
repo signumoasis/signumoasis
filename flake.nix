@@ -66,6 +66,7 @@
 
           dioxusDeps = with pkgs; [
             atkmm
+            cairo
             fontconfig
             fribidi
             gdk-pixbuf
@@ -78,6 +79,7 @@
             libdrm
             libGL
             libgpg-error
+            libsoup_3
             mesa
             openssl
             wrapGAppsHook
@@ -86,6 +88,7 @@
             xorg.libX11
             xorg.libxcb
             zlib
+            sqlite
           ];
 
           runtimeDeps = with pkgs; [
