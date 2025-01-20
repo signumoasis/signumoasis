@@ -5,8 +5,6 @@ use dioxus_fullstack::once_cell::sync::Lazy;
 
 fn main() {
     // TODO: Do these:
-    // 1. Create an axum server
-    // 2. Get dioxus endpoints registered, all app types still launching and talking to server fns
     // 3. Add protocol module registration for axum server, new port app, and tasks registering with chain
 
     // Initialize logger since the dioxus::launch isn't around to do it
@@ -24,9 +22,10 @@ fn main() {
             .block_on(async move {
                 //connect to database
 
-                let app = axum::Router::new()
-                    //.layer(CookieManagerLayer::new())
-                    .serve_dioxus_application(ServeConfig::new().unwrap(), App);
+                // TODO: Register plugin routes to this API
+                // TODO: Add any plugin-returned router/port combinations to the list of servers to spawn
+                let app =
+                    axum::Router::new().serve_dioxus_application(ServeConfig::new().unwrap(), App);
 
                 let socket_address = dioxus_cli_config::fullstack_address_or_localhost();
                 let listener = tokio::net::TcpListener::bind(&socket_address)
