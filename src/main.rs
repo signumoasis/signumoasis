@@ -68,17 +68,16 @@ fn ClientClickCounter() -> Element {
 
 #[component]
 fn ServerClickCounter() -> Element {
-    let mut server_count = use_signal(|| 0);
+    let mut server_count_resource = use_resource(serverside_counter_get);
+    let server_count = server_count_resource.suspend()?;
 
     rsx! {
-        p { id: "server_count_display", "Server Count: {server_count}" }
+        p { id: "server_count_display", "Server Count: {server_count().unwrap_or_default()}" }
         button {
             id: "server_count_clicks",
             onclick: move |_| async move {
-                if let Ok(r) = serverside_click_counter().await {
-                   server_count.set(r);
-                }
-
+                serverside_counter_increment().await;
+                server_count_resource.restart();
             },
             "SERVER - CLICK ME!"
         }
@@ -88,10 +87,16 @@ fn ServerClickCounter() -> Element {
 #[cfg(feature = "server")]
 static GLOBAL_COUNTER: Lazy<Arc<Mutex<u32>>> = Lazy::new(|| Arc::new(Mutex::new(0)));
 
-#[server(endpoint = "scount")]
-async fn serverside_click_counter() -> Result<u32, ServerFnError> {
+#[server(endpoint = "get_counter")]
+async fn serverside_counter_get() -> Result<u32, ServerFnError> {
+    let counter = GLOBAL_COUNTER.lock().unwrap();
+    Ok(*counter)
+}
+
+#[server(endpoint = "increment_counter")]
+async fn serverside_counter_increment() -> Result<(), ServerFnError> {
     let mut counter = GLOBAL_COUNTER.lock().unwrap();
     *counter += 1;
     debug!("Global Counter: {}", *counter);
-    Ok(*counter)
+    Ok(())
 }
