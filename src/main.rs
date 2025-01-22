@@ -1,25 +1,28 @@
-use std::sync::atomic::{AtomicU32, Ordering};
+use std::{
+    env,
+    sync::atomic::{AtomicU32, Ordering},
+    thread,
+};
 
-use dioxus::{logger::tracing::debug, prelude::*};
+use dioxus::{
+    logger::tracing::{debug, info},
+    prelude::*,
+};
 
 fn main() {
-    // TODO: Do these:
-    // 3. Add protocol module registration for axum server, new port app, and tasks registering with chain
-
     // Initialize logger since the dioxus::launch isn't around to do it
     dioxus::logger::initialize_default(); // TODO: Change this to my own telemetry
 
+    let args: Vec<String> = env::args().collect();
+    let headless = args.contains(&"--headless".to_owned());
+
     #[cfg(feature = "server")]
-    {
+    let server_join = thread::spawn(move || {
         use dioxus_fullstack::server::DioxusRouterExt;
 
         tokio::runtime::Runtime::new()
             .unwrap()
             .block_on(async move {
-                //connect to database
-
-                // TODO: Register plugin routes to this API
-                // TODO: Add any plugin-returned router/port combinations to the list of servers to spawn
                 let app =
                     axum::Router::new().serve_dioxus_application(ServeConfigBuilder::new(), App);
 
@@ -31,15 +34,36 @@ fn main() {
                 axum::serve(listener, app.into_make_service())
                     .await
                     .unwrap();
+
+                tokio::select! {
+                    _ = tokio::signal::ctrl_c() => {
+                        info!("Received shutdown signal. Exiting web server.")
+                    }
+                }
             })
+    });
+
+    #[cfg(feature = "desktop")]
+    if !headless {
+        LaunchBuilder::desktop().launch(App);
+    } else {
+        info!("Running in headless mode. Stop with CTRL-C.");
     }
-    #[cfg(not(feature = "server"))]
-    // Launch in desktop mode if neither "server" nor "web" is enabled
-    dioxus::launch(App);
+
+    #[cfg(all(feature = "web", target_arch = "wasm32"))]
+    LaunchBuilder::web().launch(App);
+
+    #[cfg(feature = "server")]
+    {
+        // If headless, await ctrl-c
+        server_join.join().unwrap();
+        info!("Received CTRL-C. Exiting.")
+    }
 }
 
 #[component]
 fn App() -> Element {
+    debug!("App is rendering");
     rsx! {
         p { "Hello, world" }
         ClientClickCounter{}
@@ -55,6 +79,7 @@ fn ClientClickCounter() -> Element {
         button {
             id: "count_clicks",
             onclick: move |_| {
+                debug!("Clicked client count button");
                *count.write() += 1;
             },
             "CLIENT - CLICK ME!"
@@ -72,7 +97,8 @@ fn ServerClickCounter() -> Element {
         button {
             id: "server_count_clicks",
             onclick: move |_| async move {
-                serverside_counter_increment().await;
+                debug!("Clicked server count button");
+                let _ = serverside_counter_increment().await;
                 server_count_resource.restart();
             },
             "SERVER - CLICK ME!"
