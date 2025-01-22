@@ -1,7 +1,6 @@
-use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicU32, Ordering};
 
 use dioxus::{logger::tracing::debug, prelude::*};
-use dioxus_fullstack::once_cell::sync::Lazy;
 
 fn main() {
     // TODO: Do these:
@@ -9,9 +8,6 @@ fn main() {
 
     // Initialize logger since the dioxus::launch isn't around to do it
     dioxus::logger::initialize_default(); // TODO: Change this to my own telemetry
-
-    #[cfg(feature = "web")]
-    dioxus_web::launch::launch_cfg(App, dioxus_web::Config::new().hydrate(true));
 
     #[cfg(feature = "server")]
     {
@@ -25,7 +21,7 @@ fn main() {
                 // TODO: Register plugin routes to this API
                 // TODO: Add any plugin-returned router/port combinations to the list of servers to spawn
                 let app =
-                    axum::Router::new().serve_dioxus_application(ServeConfig::new().unwrap(), App);
+                    axum::Router::new().serve_dioxus_application(ServeConfigBuilder::new(), App);
 
                 let socket_address = dioxus_cli_config::fullstack_address_or_localhost();
                 let listener = tokio::net::TcpListener::bind(&socket_address)
@@ -37,7 +33,7 @@ fn main() {
                     .unwrap();
             })
     }
-    #[cfg(all(not(feature = "server"), not(feature = "web")))]
+    #[cfg(not(feature = "server"))]
     // Launch in desktop mode if neither "server" nor "web" is enabled
     dioxus::launch(App);
 }
@@ -68,11 +64,11 @@ fn ClientClickCounter() -> Element {
 
 #[component]
 fn ServerClickCounter() -> Element {
-    let mut server_count_resource = use_resource(serverside_counter_get);
-    let server_count = server_count_resource.suspend()?;
+    let mut server_count_resource = use_server_future(serverside_counter_get)?;
+    let server_count = server_count_resource().unwrap().unwrap_or_default();
 
     rsx! {
-        p { id: "server_count_display", "Server Count: {server_count().unwrap_or_default()}" }
+        p { id: "server_count_display", "Server Count: {server_count}" }
         button {
             id: "server_count_clicks",
             onclick: move |_| async move {
@@ -85,18 +81,17 @@ fn ServerClickCounter() -> Element {
 }
 
 #[cfg(feature = "server")]
-static GLOBAL_COUNTER: Lazy<Arc<Mutex<u32>>> = Lazy::new(|| Arc::new(Mutex::new(0)));
+static GLOBAL_COUNTER: AtomicU32 = AtomicU32::new(0);
 
 #[server(endpoint = "get_counter")]
 async fn serverside_counter_get() -> Result<u32, ServerFnError> {
-    let counter = GLOBAL_COUNTER.lock().unwrap();
-    Ok(*counter)
+    let counter = GLOBAL_COUNTER.load(Ordering::Relaxed);
+    Ok(counter)
 }
 
 #[server(endpoint = "increment_counter")]
 async fn serverside_counter_increment() -> Result<(), ServerFnError> {
-    let mut counter = GLOBAL_COUNTER.lock().unwrap();
-    *counter += 1;
-    debug!("Global Counter: {}", *counter);
+    let counter = GLOBAL_COUNTER.fetch_add(1, Ordering::Relaxed);
+    debug!("Global Counter: {}", counter);
     Ok(())
 }
