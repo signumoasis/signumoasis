@@ -1,9 +1,11 @@
+#[cfg(feature = "server")]
 use tokio::task::JoinHandle;
+
 use tracing::Subscriber;
 use tracing_subscriber::{fmt::MakeWriter, prelude::*, EnvFilter};
 
 /// Sets up a tracing subscriber.
-#[cfg(not(feature = "bunyan"))]
+#[cfg(not(all(feature = "bunyan", target_arch = "wasm32")))]
 pub fn get_subscriber<Sink>(
     _name: String,
     env_filter: String,
@@ -12,33 +14,46 @@ pub fn get_subscriber<Sink>(
 where
     Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
 {
+    println!("Got non-bunyan non-wasm32 subscriber");
     use tracing_subscriber::fmt::{self, format::FmtSpan};
+    // --This code uses tracing-subscriber--
 
     let filter_layer =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(env_filter));
 
-    // --This code uses tracing-subscriber--
-    let fmt_layer = fmt::layer()
-        .compact()
-        .with_target(true)
-        .with_line_number(true)
-        .with_span_events(FmtSpan::NONE)
-        .with_writer(sink);
+    let fmt_layer = if dioxus_cli_config::is_cli_enabled() {
+        fmt::layer()
+            .compact()
+            .with_target(true)
+            .with_line_number(true)
+            .with_span_events(FmtSpan::NONE)
+            .with_writer(sink)
+            .boxed()
+    } else {
+        fmt::layer()
+            .compact()
+            .with_target(false)
+            .without_time()
+            .with_line_number(true)
+            .with_span_events(FmtSpan::NONE)
+            .with_writer(sink)
+            .boxed()
+    };
 
     let subscriber = tracing_subscriber::registry();
-    #[cfg(feature = "tokio-console")]
-    let subscriber = {
-        // Only enable this if the feature is enabled.
-        let tokio_console_fmt_layer =
-            console_subscriber::spawn().with_filter(tracing_subscriber::filter::LevelFilter::TRACE);
-        subscriber.with(tokio_console_fmt_layer)
-    };
+    //#[cfg(feature = "tokio-console")]
+    //let subscriber = {
+    //    // Only enable this if the feature is enabled.
+    //    let tokio_console_fmt_layer =
+    //        console_subscriber::spawn().with_filter(tracing_subscriber::filter::LevelFilter::TRACE);
+    //    subscriber.with(tokio_console_fmt_layer)
+    //};
 
     subscriber.with(fmt_layer.with_filter(filter_layer))
 }
 
 /// Sets up a tracing subscriber.
-#[cfg(feature = "bunyan")]
+#[cfg(all(feature = "bunyan", not(target_arch = "wasm32")))]
 pub fn get_subscriber<Sink>(
     name: String,
     env_filter: String,
@@ -60,23 +75,64 @@ where
         .with_filter(filter_layer);
 
     let subscriber = Registry::default();
-    #[cfg(feature = "tokio-console")]
-    let subscriber = {
-        // Only enable this if the feature is enabled.
-        let tokio_console_fmt_layer =
-            console_subscriber::spawn().with_filter(tracing_subscriber::filter::LevelFilter::TRACE);
-        subscriber.with(tokio_console_fmt_layer)
-    };
+    //#[cfg(feature = "tokio-console")]
+    //let subscriber = {
+    //    // Only enable this if the feature is enabled.
+    //    let tokio_console_fmt_layer =
+    //        console_subscriber::spawn().with_filter(tracing_subscriber::filter::LevelFilter::TRACE);
+    //    subscriber.with(tokio_console_fmt_layer)
+    //};
 
     subscriber.with(bunyan_layer)
 }
 
+#[cfg(target_arch = "wasm32")]
+pub fn get_subscriber<Sink>(
+    _name: String,
+    env_filter: String,
+    sink: Sink,
+) -> impl Subscriber + Send + Sync
+where
+    Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
+{
+    use tracing_subscriber::layer::SubscriberExt;
+    use tracing_subscriber::Registry;
+
+    let layer_config = tracing_wasm::WASMLayerConfigBuilder::new()
+        .set_max_level(level)
+        .build();
+    let layer = tracing_wasm::WASMLayer::new(layer_config);
+    let reg = Registry::default().with(layer);
+
+    console_error_panic_hook::set_once();
+    set_global_default(reg)
+}
+
 /// Sets the global default subscriber. Should only be called once.
-pub fn init_subscriber(subscriber: impl Subscriber + Send + Sync) {
+pub fn init_subscriber<Sink>(name: String, env_filter: String, sink: Sink)
+where
+    Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
+{
+    if tracing::dispatcher::has_been_set() {
+        return;
+    }
+
+    // DEBUG level by default if not compiled with --release, or INFO if so.
+    // Override with RUST_LOG
+    let env_filter = if env_filter.to_lowercase() != "trace" && cfg!(debug_assertions) {
+        "DEBUG".to_owned()
+    } else {
+        env_filter
+    };
+
+    let subscriber = get_subscriber(name, env_filter, sink);
+    println!("Got subscriber");
+    println!("Setting up tracing");
     let _ = tracing::subscriber::set_global_default(subscriber)
         .map_err(|_err| eprintln!("Unable to set global default subscriber"));
 }
 
+#[cfg(feature = "server")]
 pub fn spawn_blocking_with_tracing<F, R>(f: F) -> JoinHandle<R>
 where
     F: FnOnce() -> R + Send + 'static,

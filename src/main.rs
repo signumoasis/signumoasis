@@ -4,15 +4,30 @@ use std::{
     thread,
 };
 
-use dioxus::{
-    logger::tracing::{debug, info},
-    prelude::*,
-};
+use dioxus::prelude::*;
+use signum_node_rs::telemetry::{get_subscriber, init_subscriber};
+use tracing::{debug, info};
 
 fn main() {
-    // Initialize logger since the dioxus::launch isn't around to do it
-    dioxus::logger::initialize_default(); // TODO: Change this to my own telemetry
+    // TODO: Steps to finish:
+    // * [ ] Add own telemetry compatible with dx serve if possible
+    // * [ ] Load plugins
+    //   * [ ] Register plugin handlers with main axum app
+    //   * [ ] Register new plugin-provided axum apps, as necessary, for alternate port requirements
+    // * [ ] Launch all axum servers
+    // * [ ] Launch plugin-based tasks
+    // * [ ] Ensure desktop option stays launchable with backend
+    // * [ ] Figure out how to securely store wallet credentials locally when in desktop mode
+    //       and provide an automatic login capability - excluded from WASM/web mode
+    // * [ ] Find out if wasm mode can securely store credentials without leaking them to the server
 
+    // Begin by setting up tracing
+    println!("setting up logging");
+    init_subscriber("signum-node-rs".into(), "info".into(), std::io::stdout);
+
+    tracing::trace!("trace");
+    tracing::debug!("debug");
+    tracing::info!("info");
     let args: Vec<String> = env::args().collect();
     let headless = args.contains(&"--headless".to_owned());
 

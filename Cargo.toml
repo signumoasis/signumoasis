@@ -5,15 +5,16 @@ authors = ["damccull <401104+damccull@users.noreply.github.com>"]
 edition = "2021"
 rust-version = "1.84.0"
 
-# [lib]
-# path = "src/lib.rs"
-#
-# [[bin]]
-# path = "src/main.rs"
-# name = "signum-node-rs"
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+path = "src/main.rs"
+name = "signum-node-rs"
 
 [features]
 default = ["web"]
+bunyan = ["tracing-bunyan-formatter"]
 desktop = ["dioxus/desktop", "server"]
 mobile = ["dioxus/mobile"]
 server = ["dioxus/server", "axum", "tokio", "dioxus-fullstack/axum"]
@@ -30,6 +31,9 @@ serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.43.0", features = ["full"], optional = true }
 wasm-bindgen = "=0.2.97"
 dioxus-cli-config = "0.6.0"
+tracing = { version = "0.1.41", features = ["log"] }
+tracing-subscriber = { version = "0.3.19", features = ["registry", "env-filter"] }
+tracing-bunyan-formatter = { version = "0.3.10", optional = true }
 
 # [dev-dependencies]
 # once_cell = "1.19.0"
