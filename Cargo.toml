@@ -14,7 +14,7 @@ rust-version = "1.84.0"
 
 [features]
 default = ["web"]
-desktop = ["dioxus/desktop"]
+desktop = ["dioxus/desktop", "server"]
 mobile = ["dioxus/mobile"]
 server = ["dioxus/server", "axum", "tokio", "dioxus-fullstack/axum"]
 web = ["dioxus/web", "dioxus-web"]
