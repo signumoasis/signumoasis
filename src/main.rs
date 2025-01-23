@@ -23,6 +23,8 @@ fn main() {
         tokio::runtime::Runtime::new()
             .unwrap()
             .block_on(async move {
+                // TODO: Change serve_dioxus_application to something else as this causes it to
+                // launch the wasm app even if in desktop mode. Or decide this is ok.
                 let app =
                     axum::Router::new().serve_dioxus_application(ServeConfigBuilder::new(), App);
 
