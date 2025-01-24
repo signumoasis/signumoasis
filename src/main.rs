@@ -25,35 +25,13 @@ fn main() {
 
     #[cfg(feature = "server")]
     info!("Loading server");
+
     #[cfg(feature = "server")]
     let server_join = thread::spawn(move || {
-        use dioxus_fullstack::server::DioxusRouterExt;
-
+        use signum_node_rs::server;
         tokio::runtime::Runtime::new()
             .unwrap()
-            .block_on(async move {
-                // TODO: Change serve_dioxus_application to something else as this causes it to
-                // launch the wasm app even if in desktop mode. Or decide this is ok.
-                let app =
-                    axum::Router::new().serve_dioxus_application(ServeConfigBuilder::new(), App);
-
-                let socket_address = dioxus_cli_config::fullstack_address_or_localhost();
-                let listener = tokio::net::TcpListener::bind(&socket_address)
-                    .await
-                    .unwrap();
-
-                info!("Listening on {}", socket_address);
-
-                axum::serve(listener, app.into_make_service())
-                    .await
-                    .unwrap();
-
-                tokio::select! {
-                    _ = tokio::signal::ctrl_c() => {
-                        tracing::info!("Received shutdown signal. Exiting web server.")
-                    }
-                }
-            })
+            .block_on(server::setup())
     });
 
     #[cfg(feature = "desktop")]

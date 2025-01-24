@@ -1,3 +1,5 @@
+pub mod protocols;
+pub mod server;
 pub mod telemetry;
 pub mod ui;
 
