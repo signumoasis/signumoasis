@@ -1,5 +1,7 @@
 #[cfg(feature = "server")]
 use tokio::task::JoinHandle;
+#[cfg(feature = "server")]
+use tracing::instrument;
 
 use tracing::Subscriber;
 use tracing_subscriber::{fmt::MakeWriter, prelude::*, EnvFilter};
@@ -15,7 +17,6 @@ pub fn get_subscriber<Sink>(
 where
     Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
 {
-    println!("Got non-bunyan non-wasm32 subscriber");
     use tracing_subscriber::fmt::{self, format::FmtSpan};
     // --This code uses tracing-subscriber--
 
@@ -136,13 +137,12 @@ where
     };
 
     let subscriber = get_subscriber(name, env_filter, sink);
-    println!("Got subscriber");
-    println!("Setting up tracing");
     let _ = tracing::subscriber::set_global_default(subscriber)
         .map_err(|_err| eprintln!("Unable to set global default subscriber"));
 }
 
 #[cfg(feature = "server")]
+#[instrument(skip_all)]
 pub fn spawn_blocking_with_tracing<F, R>(f: F) -> JoinHandle<R>
 where
     F: FnOnce() -> R + Send + 'static,

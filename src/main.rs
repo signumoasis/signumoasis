@@ -5,8 +5,8 @@ use std::{
 };
 
 use dioxus::prelude::*;
-use signum_node_rs::telemetry::{get_subscriber, init_subscriber};
-use tracing::{debug, info};
+use signum_node_rs::telemetry::init_subscriber;
+use tracing::{debug, info, instrument};
 
 fn main() {
     // TODO: Steps to finish:
@@ -22,15 +22,13 @@ fn main() {
     // * [ ] Find out if wasm mode can securely store credentials without leaking them to the server
 
     // Begin by setting up tracing
-    println!("setting up logging");
     init_subscriber("signum-node-rs".into(), "info".into(), std::io::stdout);
 
-    tracing::trace!("trace");
-    tracing::debug!("debug");
-    tracing::info!("info");
     let args: Vec<String> = env::args().collect();
     let headless = args.contains(&"--headless".to_owned());
 
+    #[cfg(feature = "server")]
+    info!("Loading server");
     #[cfg(feature = "server")]
     let server_join = thread::spawn(move || {
         use dioxus_fullstack::server::DioxusRouterExt;
@@ -54,7 +52,7 @@ fn main() {
 
                 tokio::select! {
                     _ = tokio::signal::ctrl_c() => {
-                        info!("Received shutdown signal. Exiting web server.")
+                        tracing::info!("Received shutdown signal. Exiting web server.")
                     }
                 }
             })
@@ -62,6 +60,7 @@ fn main() {
 
     #[cfg(feature = "desktop")]
     if !headless {
+        info!("Loading desktop gui");
         LaunchBuilder::desktop().launch(App);
     } else {
         info!("Running in headless mode. Stop with CTRL-C.");
@@ -96,7 +95,7 @@ fn ClientClickCounter() -> Element {
         button {
             id: "count_clicks",
             onclick: move |_| {
-                debug!("Clicked client count button");
+                tracing::debug!("Clicked client count button");
                *count.write() += 1;
             },
             "CLIENT - CLICK ME!"
@@ -114,7 +113,7 @@ fn ServerClickCounter() -> Element {
         button {
             id: "server_count_clicks",
             onclick: move |_| async move {
-                debug!("Clicked server count button");
+                tracing::debug!("Clicked server count button");
                 let _ = serverside_counter_increment().await;
                 server_count_resource.restart();
             },
@@ -127,14 +126,16 @@ fn ServerClickCounter() -> Element {
 static GLOBAL_COUNTER: AtomicU32 = AtomicU32::new(0);
 
 #[server(endpoint = "get_counter")]
+#[instrument]
 async fn serverside_counter_get() -> Result<u32, ServerFnError> {
     let counter = GLOBAL_COUNTER.load(Ordering::Relaxed);
     Ok(counter)
 }
 
 #[server(endpoint = "increment_counter")]
+#[instrument]
 async fn serverside_counter_increment() -> Result<(), ServerFnError> {
-    let counter = GLOBAL_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let _ = GLOBAL_COUNTER.fetch_add(1, Ordering::Relaxed);
     let counter = GLOBAL_COUNTER.load(Ordering::Relaxed);
     debug!("Global Counter: {}", counter);
     Ok(())
