@@ -1,8 +1,11 @@
-use std::{env, thread};
+use std::{
+    env,
+    thread::{self, JoinHandle},
+};
 
 use dioxus::prelude::*;
 use signum_node_rs::{telemetry, ui::components::App};
-use tracing::info;
+use tracing::{error, info};
 
 fn main() {
     // TODO: Steps to finish:
@@ -24,15 +27,23 @@ fn main() {
     let headless = args.contains(&"--headless".to_owned());
 
     #[cfg(feature = "server")]
-    info!("Loading server");
+    let server_join: Option<JoinHandle<_>>;
 
     #[cfg(feature = "server")]
-    let server_join = thread::spawn(move || {
-        use signum_node_rs::server;
-        tokio::runtime::Runtime::new()
-            .unwrap()
-            .block_on(server::setup())
-    });
+    {
+        use server_stuff::load_plugins;
+
+        info!("Loading server");
+
+        let plugin_package = load_plugins();
+
+        server_join = Some(thread::spawn(move || {
+            use signum_node_rs::server;
+            tokio::runtime::Runtime::new()
+                .unwrap()
+                .block_on(server::setup())
+        }));
+    }
 
     #[cfg(feature = "desktop")]
     if !headless {
@@ -48,7 +59,31 @@ fn main() {
     #[cfg(feature = "server")]
     {
         // If headless, await ctrl-c
-        server_join.join().unwrap();
-        info!("Received CTRL-C. Exiting.")
+        if let Some(handle) = server_join {
+            handle.join().unwrap();
+            info!("Received CTRL-C. Exiting.")
+        } else {
+            error!("Not able to get server join handle");
+        }
     }
+}
+
+#[cfg(feature = "server")]
+mod server_stuff {
+
+    pub fn load_plugins() -> Vec<PluginData> {
+        Vec::new()
+    }
+
+    pub struct PluginData {
+        plugin_id: String,
+        plugin: Plugin,
+    }
+
+    pub enum Plugin {
+        RouteDefinition(axum::Router),
+        Protocol(Box<dyn Protocol>),
+    }
+
+    pub trait Protocol {}
 }
