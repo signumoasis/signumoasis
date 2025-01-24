@@ -135,6 +135,7 @@ async fn serverside_counter_get() -> Result<u32, ServerFnError> {
 #[server(endpoint = "increment_counter")]
 async fn serverside_counter_increment() -> Result<(), ServerFnError> {
     let counter = GLOBAL_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let counter = GLOBAL_COUNTER.load(Ordering::Relaxed);
     debug!("Global Counter: {}", counter);
     Ok(())
 }
