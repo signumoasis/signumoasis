@@ -1,12 +1,8 @@
-use std::{
-    env,
-    sync::atomic::{AtomicU32, Ordering},
-    thread,
-};
+use std::{env, thread};
 
 use dioxus::prelude::*;
-use signum_node_rs::telemetry;
-use tracing::{debug, info, instrument};
+use signum_node_rs::{telemetry, ui::components::App};
+use tracing::info;
 
 fn main() {
     // TODO: Steps to finish:
@@ -77,68 +73,4 @@ fn main() {
         server_join.join().unwrap();
         info!("Received CTRL-C. Exiting.")
     }
-}
-
-#[component]
-fn App() -> Element {
-    debug!("App is rendering");
-    rsx! {
-        p { "Hello, world" }
-        ClientClickCounter{}
-        ServerClickCounter{}
-    }
-}
-
-#[component]
-fn ClientClickCounter() -> Element {
-    let mut count = use_signal(|| 5);
-    rsx! {
-        p { id: "count_display", "{count}" }
-        button {
-            id: "count_clicks",
-            onclick: move |_| {
-                tracing::debug!("Clicked client count button");
-               *count.write() += 1;
-            },
-            "CLIENT - CLICK ME!"
-        }
-    }
-}
-
-#[component]
-fn ServerClickCounter() -> Element {
-    let mut server_count_resource = use_server_future(serverside_counter_get)?;
-    let server_count = server_count_resource().unwrap().unwrap_or_default();
-
-    rsx! {
-        p { id: "server_count_display", "Server Count: {server_count}" }
-        button {
-            id: "server_count_clicks",
-            onclick: move |_| async move {
-                tracing::debug!("Clicked server count button");
-                let _ = serverside_counter_increment().await;
-                server_count_resource.restart();
-            },
-            "SERVER - CLICK ME!"
-        }
-    }
-}
-
-#[cfg(feature = "server")]
-static GLOBAL_COUNTER: AtomicU32 = AtomicU32::new(0);
-
-#[server(endpoint = "get_counter")]
-#[instrument]
-async fn serverside_counter_get() -> Result<u32, ServerFnError> {
-    let counter = GLOBAL_COUNTER.load(Ordering::Relaxed);
-    Ok(counter)
-}
-
-#[server(endpoint = "increment_counter")]
-#[instrument]
-async fn serverside_counter_increment() -> Result<(), ServerFnError> {
-    let _ = GLOBAL_COUNTER.fetch_add(1, Ordering::Relaxed);
-    let counter = GLOBAL_COUNTER.load(Ordering::Relaxed);
-    debug!("Global Counter: {}", counter);
-    Ok(())
 }

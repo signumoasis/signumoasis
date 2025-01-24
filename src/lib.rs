@@ -1,4 +1,5 @@
 pub mod telemetry;
+pub mod ui;
 
 pub fn error_chain_fmt(
     e: &impl std::error::Error,
