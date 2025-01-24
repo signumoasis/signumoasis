@@ -46,6 +46,8 @@ fn main() {
                     .await
                     .unwrap();
 
+                info!("Listening on {}", socket_address);
+
                 axum::serve(listener, app.into_make_service())
                     .await
                     .unwrap();
