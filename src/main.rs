@@ -5,7 +5,7 @@ use std::{
 };
 
 use dioxus::prelude::*;
-use signum_node_rs::telemetry::init_subscriber;
+use signum_node_rs::telemetry;
 use tracing::{debug, info, instrument};
 
 fn main() {
@@ -22,7 +22,7 @@ fn main() {
     // * [ ] Find out if wasm mode can securely store credentials without leaking them to the server
 
     // Begin by setting up tracing
-    init_subscriber("signum-node-rs".into(), "info".into(), std::io::stdout);
+    telemetry::init_subscriber("signum-node-rs".into(), "info".into(), std::io::stdout);
 
     let args: Vec<String> = env::args().collect();
     let headless = args.contains(&"--headless".to_owned());
