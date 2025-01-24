@@ -10,7 +10,7 @@ use tracing::{debug, info};
 
 fn main() {
     // TODO: Steps to finish:
-    // * [ ] Add own telemetry compatible with dx serve if possible
+    // * [x] Add own telemetry compatible with dx serve if possible
     // * [ ] Load plugins
     //   * [ ] Register plugin handlers with main axum app
     //   * [ ] Register new plugin-provided axum apps, as necessary, for alternate port requirements
