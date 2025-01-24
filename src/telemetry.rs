@@ -5,6 +5,7 @@ use tracing::Subscriber;
 use tracing_subscriber::{fmt::MakeWriter, prelude::*, EnvFilter};
 
 /// Sets up a tracing subscriber.
+// INFO: Only used on Non-WASM32 targets with 'bunyan' feature disabled
 #[cfg(all(not(feature = "bunyan"), not(target_arch = "wasm32")))]
 pub fn get_subscriber<Sink>(
     _name: String,
@@ -30,6 +31,7 @@ where
             .with_writer(sink)
             .boxed()
     } else {
+        // INFO: This is a hack that sets up a cleaner subscriber when used within 'dx' cli tool.
         fmt::layer()
             .compact()
             .with_target(false)
@@ -53,6 +55,7 @@ where
 }
 
 /// Sets up a tracing subscriber.
+// INFO: Only used on Non-WASM32 targets with 'bunyan' feature enabled
 #[cfg(all(feature = "bunyan", not(target_arch = "wasm32")))]
 pub fn get_subscriber<Sink>(
     name: String,
@@ -86,6 +89,8 @@ where
     subscriber.with(bunyan_layer)
 }
 
+/// Sets up a tracing subscriber.
+// INFO: Only used on WASM32 targets
 #[cfg(target_arch = "wasm32")]
 pub fn get_subscriber<Sink>(
     _name: String,
