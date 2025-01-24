@@ -5,7 +5,7 @@ use tracing::Subscriber;
 use tracing_subscriber::{fmt::MakeWriter, prelude::*, EnvFilter};
 
 /// Sets up a tracing subscriber.
-#[cfg(not(all(feature = "bunyan", target_arch = "wasm32")))]
+#[cfg(all(not(feature = "bunyan"), not(target_arch = "wasm32")))]
 pub fn get_subscriber<Sink>(
     _name: String,
     env_filter: String,
@@ -95,8 +95,13 @@ pub fn get_subscriber<Sink>(
 where
     Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
 {
+    use std::str::FromStr;
+
+    use tracing::Level;
     use tracing_subscriber::layer::SubscriberExt;
     use tracing_subscriber::Registry;
+
+    let level = Level::from_str(&env_filter).unwrap();
 
     let layer_config = tracing_wasm::WASMLayerConfigBuilder::new()
         .set_max_level(level)
@@ -105,7 +110,7 @@ where
     let reg = Registry::default().with(layer);
 
     console_error_panic_hook::set_once();
-    set_global_default(reg)
+    reg
 }
 
 /// Sets the global default subscriber. Should only be called once.

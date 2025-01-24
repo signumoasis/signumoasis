@@ -4299,6 +4299,7 @@ name = "signum-node-rs"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "console_error_panic_hook",
  "dioxus",
  "dioxus-cli-config",
  "dioxus-fullstack",
@@ -4309,6 +4310,7 @@ dependencies = [
  "tracing",
  "tracing-bunyan-formatter",
  "tracing-subscriber",
+ "tracing-wasm",
  "wasm-bindgen",
 ]
 
