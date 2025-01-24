@@ -23,7 +23,7 @@ where
     let filter_layer =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(env_filter));
 
-    let fmt_layer = if dioxus_cli_config::is_cli_enabled() {
+    let fmt_layer = if !dioxus_cli_config::is_cli_enabled() {
         fmt::layer()
             .compact()
             .with_target(true)
