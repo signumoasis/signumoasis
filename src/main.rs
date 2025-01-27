@@ -1,11 +1,8 @@
-use std::{
-    env,
-    thread::{self, JoinHandle},
-};
+use std::env;
 
 use dioxus::prelude::*;
 use signum_node_rs::{telemetry, ui::components::App};
-use tracing::{error, info};
+use tracing::info;
 
 // TODO: Steps to finish:
 // * [x] Add own telemetry compatible with dx serve if possible
@@ -38,7 +35,7 @@ fn main() {
         use signum_node_rs::server;
         let runner = tokio::runtime::Runtime::new().expect("unable to get a tokio runtime");
         runner.spawn(server::setup());
-        if headless {
+        if headless || !cfg!(feature = "desktop") {
             info!("Running in headless mode. Stop with CTRL-C.");
             runner.block_on(async {
                 tokio::signal::ctrl_c()
