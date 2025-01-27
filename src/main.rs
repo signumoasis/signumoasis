@@ -37,13 +37,9 @@ fn main() {
     // INFO: Do things only necessary on the server
     #[cfg(feature = "server")]
     {
-        use signum_node_rs::server_stuff::load_plugins;
-
         info!("Loading server");
 
-        let plugin_package = load_plugins();
-
-        // TODO: pass all plugindata to the tokio runtim on the server below to allow it to register stuff
+        // TODO: Pass database and settings into this...somehow
         server_join = Some(thread::spawn(move || {
             use signum_node_rs::server;
             tokio::runtime::Runtime::new()
