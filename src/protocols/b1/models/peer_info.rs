@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use super::peer_address::PeerAddress;
+use crate::common::models::PeerAddress;
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
