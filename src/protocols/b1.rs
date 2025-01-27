@@ -1,3 +1,4 @@
+#![cfg(feature = "server")]
 //pub mod api;
 //pub mod b1_peer;
 pub mod b1_configuration;
@@ -20,13 +21,13 @@ pub struct B1Protocol {}
 impl Protocol for B1Protocol {
     fn register(
         router: Router,
-        chain_channel_tx: mpsc::Sender<ChainMessage>,
+        _chain_channel_tx: mpsc::Sender<ChainMessage>,
         database: Datastore,
     ) -> (Router, PluginData) {
-        let database: B1Datastore = database.into();
+        let _database: B1Datastore = database.into();
 
         // INFO: This mpsc is used for communication of the client API to the B1 tasks
-        let (b1_internal_tx, mut b1_internal_rx) = mpsc::channel::<B1InternalMessage>();
+        let (_b1_internal_tx, _b1_internal_rx) = mpsc::channel::<B1InternalMessage>();
 
         // TODO: Create routes for the main API - Ensure clone of chain_channel_tx per necessary endpoint
 

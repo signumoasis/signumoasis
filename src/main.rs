@@ -1,8 +1,4 @@
-use std::env;
-
-use dioxus::prelude::*;
-use signum_node_rs::{telemetry, ui::components::App};
-use tracing::info;
+use signum_node_rs::telemetry;
 
 // TODO: Steps to finish:
 // * [x] Add own telemetry compatible with dx serve if possible
@@ -21,7 +17,9 @@ fn main() {
     telemetry::init_subscriber("signum-node-rs".into(), "info".into(), std::io::stdout);
 
     // INFO: Get any args from CLI
-    let args: Vec<String> = env::args().collect();
+    #[cfg(any(feature = "server", feature = "desktop"))]
+    let args: Vec<String> = std::env::args().collect();
+    #[cfg(any(feature = "server", feature = "desktop"))]
     let headless = args.contains(&"--headless".to_owned());
 
     // TODO: Set up database here. Can be used to store app settings as well as plugin data
@@ -30,13 +28,13 @@ fn main() {
     // INFO: Do things only necessary on the server
     #[cfg(feature = "server")]
     {
-        info!("Loading server");
+        tracing::info!("Loading server");
 
         use signum_node_rs::server;
         let runner = tokio::runtime::Runtime::new().expect("unable to get a tokio runtime");
         runner.spawn(server::setup());
         if headless || !cfg!(feature = "desktop") {
-            info!("Running in headless mode. Stop with CTRL-C.");
+            tracing::info!("Running in headless mode. Stop with CTRL-C.");
             runner.block_on(async {
                 tokio::signal::ctrl_c()
                     .await
@@ -49,11 +47,18 @@ fn main() {
     // INFO: Launch desktop app code
     #[cfg(feature = "desktop")]
     if !headless {
-        info!("Loading desktop gui");
-        LaunchBuilder::desktop().launch(App);
+        use signum_node_rs::ui::components::App;
+        tracing::info!("Loading desktop gui");
+        dioxus::prelude::LaunchBuilder::desktop().launch(App);
     }
 
     // INFO: WASM-only code. Only runs in the WASM bin
     #[cfg(all(feature = "web", target_arch = "wasm32"))]
-    LaunchBuilder::web().launch(App);
+    {
+        use signum_node_rs::ui::components::App;
+        eprintln!("Test error");
+        println!("test output");
+        tracing::info!("Launching wasm app");
+        dioxus::prelude::LaunchBuilder::web().launch(App);
+    }
 }

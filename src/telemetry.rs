@@ -4,7 +4,9 @@ use tokio::task::JoinHandle;
 use tracing::instrument;
 
 use tracing::Subscriber;
-use tracing_subscriber::{fmt::MakeWriter, prelude::*, EnvFilter};
+use tracing_subscriber::fmt::MakeWriter;
+#[cfg(feature = "server")]
+use tracing_subscriber::{prelude::*, EnvFilter};
 
 /// Sets up a tracing subscriber.
 // INFO: Only used on Non-WASM32 targets with 'bunyan' feature disabled
@@ -96,7 +98,7 @@ where
 pub fn get_subscriber<Sink>(
     _name: String,
     env_filter: String,
-    sink: Sink,
+    _sink: Sink,
 ) -> impl Subscriber + Send + Sync
 where
     Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
@@ -139,6 +141,7 @@ where
     let subscriber = get_subscriber(name, env_filter, sink);
     let _ = tracing::subscriber::set_global_default(subscriber)
         .map_err(|_err| eprintln!("Unable to set global default subscriber"));
+    tracing::debug!("Tracing subscriber setup complete");
 }
 
 #[cfg(feature = "server")]

@@ -1,3 +1,4 @@
+#![cfg(feature = "server")]
 use std::sync::mpsc;
 
 use axum::Router;
