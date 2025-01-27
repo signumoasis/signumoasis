@@ -17,12 +17,4 @@ pub async fn setup() {
     axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
-
-    tokio::select! {
-        // TODO: Don't catch ctrl-c here. Tokio is not the main fn so won't set up
-        // a catch. Catch it manually and send a signal to this instead via channel.
-        _ = tokio::signal::ctrl_c() => {
-            tracing::info!("Received shutdown signal. Exiting web server.")
-        }
-    }
 }

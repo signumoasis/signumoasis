@@ -13,7 +13,7 @@ pub struct PluginData {
     pub plugin_id: String,
     /// Routes the plugin would like registered into the main web server.
     //pub route_definitions: Vec<axum::Router>,
-    ///// A list of tasks that the plugin would like to those to run on its behalf.
+    /// A list of tasks that the plugin would like to those to run on its behalf.
     pub spawnable_tasks:
         Vec<fn(Surreal<Any>, Settings) -> Pin<Box<dyn Future<Output = anyhow::Result<()>>>>>,
 }
