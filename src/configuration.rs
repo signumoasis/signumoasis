@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use serde::Deserialize;
 use surrealdb::{
     engine::any::{self, Any},
@@ -7,7 +5,7 @@ use surrealdb::{
     Surreal,
 };
 
-use crate::protocols::b1::B1Datastore;
+use crate::common::datastore::Datastore;
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     // Get the base execution director
@@ -55,7 +53,7 @@ pub struct DatabaseSettings {
 
 impl DatabaseSettings {
     #[tracing::instrument(skip_all)]
-    pub async fn get_db(&self) -> Result<B1Datastore, anyhow::Error> {
+    pub async fn get_db(&self) -> Result<Datastore, anyhow::Error> {
         tracing::info!("Getting database");
         let db = any::connect(&self.filename).await?;
         // let db = any::connect(format!("speedb:{}", self.filename)).await?;
@@ -85,7 +83,7 @@ impl DatabaseSettings {
         tracing::info!("Initializing database");
         let db = initialize_database(db).await?;
 
-        Ok(B1Datastore::new(db))
+        Ok(Datastore::new(db))
     }
 }
 

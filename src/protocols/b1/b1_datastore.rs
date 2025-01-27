@@ -7,7 +7,10 @@ use surrealdb::{
     Response, Surreal,
 };
 
-use crate::{common::models::PeerAddress, protocols::b1::models::peer_info::PeerInfo};
+use crate::{
+    common::{datastore::Datastore, models::PeerAddress},
+    protocols::b1::models::peer_info::PeerInfo,
+};
 
 #[derive(Clone, Debug)]
 pub struct B1Datastore {
@@ -252,6 +255,14 @@ impl B1Datastore {
             .context(format!("unable to update peer info for {}", peer_address))?;
 
         Ok(response)
+    }
+}
+
+impl From<Datastore> for B1Datastore {
+    fn from(value: Datastore) -> Self {
+        Self {
+            db: value.get_surreal_db(),
+        }
     }
 }
 

@@ -6,6 +6,7 @@ pub mod configuration;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod protocols;
 pub mod server;
+pub mod server_stuff;
 pub mod telemetry;
 pub mod ui;
 use itertools::Itertools;
