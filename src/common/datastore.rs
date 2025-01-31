@@ -1,3 +1,4 @@
+#![cfg(feature = "server")]
 use surrealdb::{engine::any::Any, Surreal};
 
 #[derive(Clone, Debug)]

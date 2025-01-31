@@ -56,8 +56,6 @@ fn main() {
     #[cfg(all(feature = "web", target_arch = "wasm32"))]
     {
         use signum_node_rs::ui::components::App;
-        eprintln!("Test error");
-        println!("test output");
         tracing::info!("Launching wasm app");
         dioxus::prelude::LaunchBuilder::web().launch(App);
     }
