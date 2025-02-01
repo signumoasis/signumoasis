@@ -112,6 +112,7 @@
             [
               # Libraries and programs needed for dev work; included in dev shell
               # NOT included in the nix build operation
+              bacon
               bashInteractive
               bunyan-rs
               cargo-deny
