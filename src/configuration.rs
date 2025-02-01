@@ -5,7 +5,7 @@ use surrealdb::{
     Surreal,
 };
 
-use crate::common::datastore::Datastore;
+use crate::{common::datastore::Datastore, protocols::b1::b1_configuration::B1Settings};
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     // Get the base execution director
@@ -38,11 +38,17 @@ trait ConfigBuilderExtensions {
 /// Settings for the node.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Settings {
-    //pub srs_api: SrsApiSettings,
+    #[cfg(feature = "server")]
+    pub b1protocol: B1Settings,
     pub database: DatabaseSettings,
-    //pub historical_moments: HistoricalMoments,
-    //pub node: NodeSettings,
-    //pub p2p: PeerToPeerSettings,
+    pub historical_moments: HistoricalMoments,
+    pub node: NodeSettings,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct NodeSettings {
+    pub cash_back_id: String,
+    pub network: String,
 }
 
 /// Database settings.

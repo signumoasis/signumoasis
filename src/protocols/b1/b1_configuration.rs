@@ -6,16 +6,11 @@ use crate::common::models::PeerAddress;
 
 /// Settings for the signum-style API.
 #[derive(Clone, Debug, Deserialize)]
-pub struct SrsApiSettings {
+pub struct B1Settings {
     pub base_url: String,
     pub listen_address: String,
     pub listen_port: u16,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct NodeSettings {
-    pub cash_back_id: String,
-    pub network: String,
+    pub p2p: PeerToPeerSettings,
 }
 
 /// Peer to Peer settings.

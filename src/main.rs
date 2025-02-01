@@ -22,12 +22,15 @@ fn main() {
     #[cfg(any(feature = "server", feature = "desktop"))]
     let headless = args.contains(&"--headless".to_owned());
 
-    // TODO: Set up database here. Can be used to store app settings as well as plugin data
-    // in different namespaces
-
     // INFO: Do things only necessary on the server
     #[cfg(feature = "server")]
     {
+        let settings =
+            signum_node_rs::configuration::get_configuration().expect("unable to load settings");
+
+        // TODO: Set up database here. Can be used to store app settings as well as plugin data
+        // in different namespaces
+
         tracing::info!("Loading server");
 
         use signum_node_rs::server;

@@ -3,19 +3,13 @@ use std::sync::mpsc;
 
 use axum::Router;
 
-use crate::{common::datastore::Datastore, server_stuff::PluginData};
+use crate::{common::datastore::Datastore, configuration::Settings};
 
 pub mod b1;
 
 pub trait Protocol {
-    /// Creates and returns a [`PluginData`] containing the items the plugin needs the host to run.
-    fn register(
-        router: Router,
-        chain_channel_tx: mpsc::Sender<ChainMessage>,
-        db: Datastore,
-    ) -> (Router, PluginData);
-    fn init() {}
-    fn run() {}
+    fn register_settings();
+    fn initialize(settings: Settings, router: Router, chain_message_tx: mpsc::Sender<ChainMessage>);
 }
 
 /// Messages to the Chain

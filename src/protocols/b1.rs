@@ -10,7 +10,7 @@ mod b1_datastore;
 
 pub use b1_datastore::B1Datastore;
 
-use crate::{common::datastore::Datastore, server_stuff::PluginData};
+use crate::{common::datastore::Datastore, configuration::Settings, server_stuff::PluginData};
 use axum::Router;
 use std::sync::mpsc;
 
@@ -19,12 +19,15 @@ use super::{ChainMessage, Protocol};
 pub struct B1Protocol {}
 
 impl Protocol for B1Protocol {
-    fn register(
+    fn register_settings() {}
+
+    fn initialize(
+        settings: Settings,
         router: Router,
-        _chain_channel_tx: mpsc::Sender<ChainMessage>,
-        database: Datastore,
-    ) -> (Router, PluginData) {
-        let _database: B1Datastore = database.into();
+        chain_message_tx: mpsc::Sender<ChainMessage>,
+    ) {
+        // TODO: get b1datastore from settings
+        //let _database: B1Datastore = database.into();
 
         // INFO: This mpsc is used for communication of the client API to the B1 tasks
         let (_b1_internal_tx, _b1_internal_rx) = mpsc::channel::<B1InternalMessage>();
@@ -32,19 +35,7 @@ impl Protocol for B1Protocol {
         // TODO: Create routes for the main API - Ensure clone of chain_channel_tx per necessary endpoint
 
         // TODO: Create tasks for the main runner to run - Ensure clone of chain_channel_tx per necessary task
-
-        (
-            router,
-            PluginData {
-                plugin_id: "B1".to_owned(),
-                spawnable_tasks: Vec::new(),
-            },
-        )
     }
-
-    fn init() {}
-
-    fn run() {}
 }
 
 // TODO: Flesh out the messages used between B1 client API and tasks
