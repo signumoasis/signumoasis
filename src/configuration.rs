@@ -15,8 +15,12 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let configuration_file = "configuration.yml";
 
     let settings = config::Config::builder();
+
     let settings = HistoricalMoments::set_defaults(settings)?;
+
+    #[cfg(feature = "server")]
     let settings = B1Settings::set_defaults(settings)?;
+
     let settings = settings
         //add values from a file
         .add_source(config::File::from(base_path.join(configuration_file)))

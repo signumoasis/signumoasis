@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use config::{builder::DefaultState, ConfigBuilder, ConfigError};
 use serde::Deserialize;
 
@@ -39,14 +37,14 @@ pub struct PeerToPeerSettings {
     pub snr_reward_address: String,
 }
 
-// Defaults for PeerToPeerSettings
 impl PeerToPeerSettings {
+    /// Set defaults for the [`PeerToPeerSettings`].
     fn set_defaults(
         builder: ConfigBuilder<DefaultState>,
     ) -> Result<ConfigBuilder<DefaultState>, ConfigError> {
         builder
             .set_default("b1protocol.p2p.bootstrap_peers", {
-                let peers = vec![
+              vec![
                     "australia.signum.network:8123",
                     "brazil.signum.network:8123",
                     "canada.signum.network:8123",
@@ -59,13 +57,7 @@ impl PeerToPeerSettings {
                     "ru.signum.network:8123",
                     "us-central.signum.network:8123",
                     "us-east.signum.network:8123",
-                ];
-
-                //let peers: Result<Vec<PeerAddress>, _> =
-                //    peers.into_iter().map(PeerAddress::from_str).collect();
-                //
-                //let peers = peers.map_err(|e| ConfigError::Foreign(e.into()));
-                peers
+                ]
             })?
             //TODO: Figure out a way to get external IP and populate it
             .set_default("b1protocol.p2p.my_address", String::new())?
