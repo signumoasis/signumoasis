@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use config::{builder::DefaultState, ConfigBuilder, ConfigError};
 use serde::Deserialize;
 
 use crate::common::models::PeerAddress;
@@ -13,78 +14,64 @@ pub struct B1Settings {
     pub p2p: PeerToPeerSettings,
 }
 
+impl B1Settings {
+    pub(crate) fn set_defaults(
+        builder: ConfigBuilder<DefaultState>,
+    ) -> Result<ConfigBuilder<DefaultState>, ConfigError> {
+        PeerToPeerSettings::set_defaults(builder)
+    }
+}
+
 /// Peer to Peer settings.
 #[derive(Clone, Debug, Deserialize)]
 pub struct PeerToPeerSettings {
     /// Peer addresses to use if none are in the database already.
-    #[serde(default = "PeerToPeerSettings::default_value_bootstrap_peers")]
     pub bootstrap_peers: Vec<PeerAddress>,
     /// Address that peers should attempt to connect to.
-    #[serde(default = "PeerToPeerSettings::default_value_my_address")]
     pub my_address: String,
     /// A string indicating the platform in use. Often set to a signum address for SNR rewards.
-    #[serde(default = "PeerToPeerSettings::default_value_platform")]
     pub platform: String,
     /// Whether or not peers should pass along your address to their own peers.
-    #[serde(default = "PeerToPeerSettings::default_value_share_address")]
     pub share_address: bool,
     /// The name of the network to which this node is connecting.
-    #[serde(default = "PeerToPeerSettings::default_value_network_name")]
     pub network_name: String,
     /// The address to which SNR awards should be paid. Currently unused on the network.
-    #[serde(default = "PeerToPeerSettings::default_value_snr_reward_address")]
     pub snr_reward_address: String,
 }
 
 // Defaults for PeerToPeerSettings
 impl PeerToPeerSettings {
-    fn default_value_bootstrap_peers() -> Vec<PeerAddress> {
-        vec![
-            PeerAddress::from_str("australia.signum.network:8123")
-                .expect("could not parse bootstrap ip address `australia.signum.network:8123`"),
-            PeerAddress::from_str("brazil.signum.network:8123")
-                .expect("could not parse bootstrap ip address `brazil.signum.network:8123`"),
-            PeerAddress::from_str("canada.signum.network:8123")
-                .expect("could not parse bootstrap ip address `canada.signum.network:8123`"),
-            PeerAddress::from_str("europe.signum.network:8123")
-                .expect("could not parse bootstrap ip address `europe.signum.network:8123`"),
-            PeerAddress::from_str("europe1.signum.network:8123")
-                .expect("could not parse bootstrap ip address `europe1.signum.network:8123`"),
-            PeerAddress::from_str("europe2.signum.network:8123")
-                .expect("could not parse bootstrap ip address `europe2.signum.network:8123`"),
-            PeerAddress::from_str("europe3.signum.network:8123")
-                .expect("could not parse bootstrap ip address `europe3.signum.network:8123`"),
-            PeerAddress::from_str("latam.signum.network:8123")
-                .expect("could not parse bootstrap ip address `latam.signum.network:8123`"),
-            PeerAddress::from_str("singapore.signum.network:8123")
-                .expect("could not parse bootstrap ip address `singapore.signum.network:8123`"),
-            PeerAddress::from_str("ru.signum.network:8123")
-                .expect("could not parse bootstrap ip address `ru.signum.network:8123`"),
-            PeerAddress::from_str("us-central.signum.network:8123")
-                .expect("could not parse bootstrap ip address `us-central.signum.network:8123`"),
-            PeerAddress::from_str("us-east.signum.network:8123")
-                .expect("could not parse bootstrap ip address `us-east.signum.network:8123`"),
-        ]
-    }
+    fn set_defaults(
+        builder: ConfigBuilder<DefaultState>,
+    ) -> Result<ConfigBuilder<DefaultState>, ConfigError> {
+        builder
+            .set_default("b1protocol.p2p.bootstrap_peers", {
+                let peers = vec![
+                    "australia.signum.network:8123",
+                    "brazil.signum.network:8123",
+                    "canada.signum.network:8123",
+                    "europe.signum.network:8123",
+                    "europe1.signum.network:8123",
+                    "europe2.signum.network:8123",
+                    "europe3.signum.network:8123",
+                    "latam.signum.network:8123",
+                    "singapore.signum.network:8123",
+                    "ru.signum.network:8123",
+                    "us-central.signum.network:8123",
+                    "us-east.signum.network:8123",
+                ];
 
-    fn default_value_my_address() -> String {
-        //TODO: Figure out a way to get external IP and populate it
-        String::new()
-    }
-
-    fn default_value_platform() -> String {
-        String::new()
-    }
-
-    fn default_value_share_address() -> bool {
-        true
-    }
-
-    fn default_value_network_name() -> String {
-        "Signum".to_string()
-    }
-
-    fn default_value_snr_reward_address() -> String {
-        String::new()
+                //let peers: Result<Vec<PeerAddress>, _> =
+                //    peers.into_iter().map(PeerAddress::from_str).collect();
+                //
+                //let peers = peers.map_err(|e| ConfigError::Foreign(e.into()));
+                peers
+            })?
+            //TODO: Figure out a way to get external IP and populate it
+            .set_default("b1protocol.p2p.my_address", String::new())?
+            .set_default("b1protocol.p2p.platform", String::new())?
+            .set_default("b1protocol.p2p.share_address", true)?
+            .set_default("b1protocol.p2p.network_name", "Signum".to_string())?
+            .set_default("b1protocol.p2p.snr_reward_address", String::new())
     }
 }
