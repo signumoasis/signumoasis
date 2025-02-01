@@ -85,6 +85,23 @@ impl B1Datastore {
         Ok(response)
     }
 
+    pub async fn count_peers(&self) -> Result<u32> {
+        let mut response = self
+            .db
+            .query(
+                r#"
+                SELECT count() as count FROM peer GROUP ALL
+                "#,
+            )
+            .await
+            .context("count not get peer count")?;
+        let count = response
+            .take::<Option<u32>>("count")
+            .context("query finished but coudn't take peer count")?
+            .ok_or_else(|| anyhow::anyhow!("couldn't convert option to result"))?;
+        Ok(count)
+    }
+
     /// Manually deblacklists a peer.
     pub async fn deblacklist_peer(&self, peer: PeerAddress) -> Result<Response, DatastoreError> {
         let response = self

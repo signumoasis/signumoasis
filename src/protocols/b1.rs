@@ -15,6 +15,7 @@ pub mod peers;
 pub use b1_configuration::B1Settings;
 pub use b1_datastore::B1Datastore;
 pub use b1_peer::B1Peer;
+use dioxus::prelude::*;
 use peer_finder::*;
 use peer_info_trader::*;
 
@@ -83,7 +84,10 @@ impl Protocol for B1Protocol {
         }
     }
 
-    fn register_routes(router: Router) -> Router {
+    fn register_routes<S>(router: Router<S>) -> Router<S>
+    where
+        S: Clone + Send + Sync + 'static,
+    {
         router
     }
 }

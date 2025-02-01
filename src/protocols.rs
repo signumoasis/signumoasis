@@ -19,7 +19,9 @@ pub trait Protocol {
         settings: Settings,
         chain_message_tx: mpsc::Sender<ChainMessage>,
     ) -> Self;
-    fn register_routes(router: Router) -> Router;
+    fn register_routes<S>(router: Router<S>) -> Router<S>
+    where
+        S: Clone + Send + Sync + 'static;
 }
 
 /// Messages to the Chain
