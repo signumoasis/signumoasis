@@ -25,20 +25,21 @@ fn main() {
     // INFO: Do things only necessary on the server
     #[cfg(feature = "server")]
     {
+        tracing::info!("Launching server");
+
+        tracing::info!("Loading settings");
         let settings =
             signum_node_rs::configuration::get_configuration().expect("unable to load settings");
-
-        // TODO: Set up database here. Can be used to store app settings as well as plugin data
-        // in different namespaces
-
-        tracing::info!("Loading server");
 
         use signum_node_rs::server;
         let runner = tokio::runtime::Runtime::new().expect("unable to get a tokio runtime");
         runner.spawn(server::run(settings.clone()));
+
         if headless || !cfg!(feature = "desktop") {
-            tracing::info!("Running in headless mode. Stop with CTRL-C.");
             runner.block_on(async {
+                // INFO: Wait 250ms to display this message near or at the end of the startup
+                tokio::time::sleep(std::time::Duration::from_millis(250)).await;
+                tracing::info!("Running in headless mode. Stop with CTRL-C.");
                 tokio::signal::ctrl_c()
                     .await
                     .expect("couldn't listen for ctrl-c for some reason");
