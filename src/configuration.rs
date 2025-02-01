@@ -1,3 +1,4 @@
+use config::{builder::DefaultState, ConfigBuilder, ConfigError};
 use serde::Deserialize;
 use surrealdb::{
     engine::any::{self, Any},
@@ -13,7 +14,9 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     // Set the configuration file
     let configuration_file = "configuration.yml";
 
-    let settings = config::Config::builder()
+    let settings = config::Config::builder();
+    let settings = HistoricalMoments::set_defaults(settings)?;
+    let settings = settings
         //add values from a file
         .add_source(config::File::from(base_path.join(configuration_file)))
         .add_source(
@@ -109,49 +112,27 @@ async fn initialize_database(db: Surreal<Any>) -> Result<Surreal<Any>, anyhow::E
 /// This settings struct represents any overrides for the historical moments. All values are optional.
 #[derive(Clone, Debug, Deserialize)]
 pub struct HistoricalMoments {
-    #[serde(default = "HistoricalMoments::genesis")]
     pub genesis: u32,
-    #[serde(default = "HistoricalMoments::reward_recipient_enable")]
     pub reward_recipient_enable: u32,
-    #[serde(default = "HistoricalMoments::digital_goods_store_enable")]
     pub digital_goods_store_enable: u32,
-    #[serde(default = "HistoricalMoments::automated_transaction_enable")]
     pub automated_transaction_enable: u32,
-    #[serde(default = "HistoricalMoments::automated_transaction_fix_1")]
     pub automated_transaction_fix_1: u32,
-    #[serde(default = "HistoricalMoments::automated_transaction_fix_2")]
     pub automated_transaction_fix_2: u32,
-    #[serde(default = "HistoricalMoments::automated_transaction_fix_3")]
     pub automated_transaction_fix_3: u32,
-    #[serde(default = "HistoricalMoments::pre_poc2")]
     pub pre_poc2: u32,
-    #[serde(default = "HistoricalMoments::poc2_enable")]
     pub poc2_enable: u32,
-    #[serde(default = "HistoricalMoments::sodium_enable")]
     pub sodium_enable: u32,
-    #[serde(default = "HistoricalMoments::signum_name_change")]
     pub signum_name_change: u32,
-    #[serde(default = "HistoricalMoments::poc_plus_enable")]
     pub poc_plus_enable: u32,
-    #[serde(default = "HistoricalMoments::speedway_enable")]
     pub speedway_enable: u32,
-    #[serde(default = "HistoricalMoments::smart_token_enable")]
     pub smart_token_enable: u32,
-    #[serde(default = "HistoricalMoments::smart_fees_enable")]
     pub smart_fees_enable: u32,
-    #[serde(default = "HistoricalMoments::smart_ats_enable")]
     pub smart_ats_enable: u32,
-    #[serde(default = "HistoricalMoments::automated_transaction_fix_4")]
     pub automated_transaction_fix_4: u32,
-    #[serde(default = "HistoricalMoments::distribution_fix_enable")]
     pub distribution_fix_enable: u32,
-    #[serde(default = "HistoricalMoments::pk_freeze")]
     pub pk_freeze: u32,
-    #[serde(default = "HistoricalMoments::pk_freeze_2")]
     pub pk_freeze_2: u32,
-    #[serde(default = "HistoricalMoments::smart_alias_enable")]
     pub smart_alias_enable: u32,
-    #[serde(default = "HistoricalMoments::next_fork")]
     pub next_fork: u32,
     //pub reward_recipient_enable: Option<u32>,
     //pub digital_goods_store_enable: Option<u32>,
@@ -178,70 +159,31 @@ pub struct HistoricalMoments {
 
 // Defaults for HistoricalMoments
 impl HistoricalMoments {
-    fn genesis() -> u32 {
-        0
-    }
-    fn reward_recipient_enable() -> u32 {
-        6_500
-    }
-    fn digital_goods_store_enable() -> u32 {
-        11_800
-    }
-    fn automated_transaction_enable() -> u32 {
-        49_200
-    }
-    fn automated_transaction_fix_1() -> u32 {
-        67_000
-    }
-    fn automated_transaction_fix_2() -> u32 {
-        92_000
-    }
-    fn automated_transaction_fix_3() -> u32 {
-        255_000
-    }
-    fn pre_poc2() -> u32 {
-        500_000
-    }
-    fn poc2_enable() -> u32 {
-        502_000
-    }
-    fn sodium_enable() -> u32 {
-        765_000
-    }
-    fn signum_name_change() -> u32 {
-        875_500
-    }
-    fn poc_plus_enable() -> u32 {
-        878_000
-    }
-    fn speedway_enable() -> u32 {
-        941_100
-    }
-    fn smart_token_enable() -> u32 {
-        1_029_000
-    }
-    fn smart_fees_enable() -> u32 {
-        1_029_000
-    }
-    fn smart_ats_enable() -> u32 {
-        1_029_000
-    }
-    fn automated_transaction_fix_4() -> u32 {
-        1_051_900
-    }
-    fn distribution_fix_enable() -> u32 {
-        1_051_900
-    }
-    fn pk_freeze() -> u32 {
-        1_099_400
-    }
-    fn pk_freeze_2() -> u32 {
-        1_150_000
-    }
-    fn smart_alias_enable() -> u32 {
-        1_150_000
-    }
-    fn next_fork() -> u32 {
-        u32::MAX
+    fn set_defaults(
+        builder: ConfigBuilder<DefaultState>,
+    ) -> Result<ConfigBuilder<DefaultState>, ConfigError> {
+        builder
+            .set_default("historical_moments.genesis", 0)?
+            .set_default("historical_moments.reward_recipient_enable", 6_500)?
+            .set_default("historical_moments.digital_goods_store_enable", 11_800)?
+            .set_default("historical_moments.automated_transaction_enable", 49_200)?
+            .set_default("historical_moments.automated_transaction_fix_1", 67_000)?
+            .set_default("historical_moments.automated_transaction_fix_2", 92_000)?
+            .set_default("historical_moments.automated_transaction_fix_3", 255_000)?
+            .set_default("historical_moments.pre_poc2", 500_000)?
+            .set_default("historical_moments.poc2_enable", 502_000)?
+            .set_default("historical_moments.sodium_enable", 765_000)?
+            .set_default("historical_moments.signum_name_change", 875_500)?
+            .set_default("historical_moments.poc_plus_enable", 878_000)?
+            .set_default("historical_moments.speedway_enable", 941_100)?
+            .set_default("historical_moments.smart_token_enable", 1_029_000)?
+            .set_default("historical_moments.smart_fees_enable", 1_029_000)?
+            .set_default("historical_moments.smart_ats_enable", 1_029_000)?
+            .set_default("historical_moments.automated_transaction_fix_4", 1_051_900)?
+            .set_default("historical_moments.distribution_fix_enable", 1_051_900)?
+            .set_default("historical_moments.pk_freeze", 1_099_400)?
+            .set_default("historical_moments.pk_freeze_2", 1_150_000)?
+            .set_default("historical_moments.smart_alias_enable", 1_150_000)?
+            .set_default("historical_moments.next_fork", u32::MAX)
     }
 }
