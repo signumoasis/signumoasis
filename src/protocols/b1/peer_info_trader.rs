@@ -4,16 +4,15 @@ use anyhow::Result;
 use tracing::Instrument;
 use uuid::Uuid;
 
-use crate::{
-    chain::models::datastore::Datastore,
-    srs_protocol::{
-        b1_peer::B1Peer,
-        peers::{update_db_peer_info, BasicPeerClient},
-    },
+use crate::protocols::b1::{
+    peers::{update_db_peer_info, BasicPeerClient},
+    B1Peer,
 };
 
+use super::B1Datastore;
+
 #[tracing::instrument(skip_all)]
-pub async fn run_peer_info_trader_forever(database: Datastore) -> Result<()> {
+pub async fn run_peer_info_trader_forever(database: B1Datastore) -> Result<()> {
     tracing::info!("Starting peer info trader task");
     loop {
         // Open the job-level span here so we also include the job_id in the error message if this result comes back Error.
@@ -32,7 +31,7 @@ pub async fn run_peer_info_trader_forever(database: Datastore) -> Result<()> {
 /// Gets info from peer nodes and stores it.
 /// Simultaneously supplies this node's info to the peers it contacts.
 #[tracing::instrument(name = "Peer Info Trader", skip_all)]
-pub async fn peer_info_trader(database: Datastore) -> Result<()> {
+pub async fn peer_info_trader(database: B1Datastore) -> Result<()> {
     // Get all peers from the database that haven't been seen in 1 minute
     let peers = database
         .get_peers_last_seen_before(Duration::from_secs(60))

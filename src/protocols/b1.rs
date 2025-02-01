@@ -6,6 +6,7 @@ mod b1_datastore;
 mod b1_peer;
 pub mod models;
 mod peer_finder;
+mod peer_info_trader;
 pub mod peers;
 //pub mod peer_finder;
 //pub mod peer_info_trader;
@@ -14,7 +15,8 @@ pub mod peers;
 pub use b1_configuration::B1Settings;
 pub use b1_datastore::B1Datastore;
 pub use b1_peer::B1Peer;
-pub use peer_finder::*;
+use peer_finder::*;
+use peer_info_trader::*;
 
 use crate::{common::datastore::Datastore, configuration::Settings, protocols::report_exit};
 use axum::Router;
@@ -51,14 +53,15 @@ impl Protocol for B1Protocol {
         ));
 
         // Create the peer info trader task
-        //let peer_info_trader_task = tokio::spawn(run_peer_info_trader_forever(database));
+        let peer_info_trader_task =
+            tokio::spawn(run_peer_info_trader_forever(self.datastore.clone()));
 
         // Select on all the tasks to report closure status
         tokio::select! {
             //o = block_downloader_task=> report_exit("Block Downloader", o),
             //o = p2p_api_task => report_exit("P2P API Server", o),
             o = peer_finder_task => report_exit("Peer Finder", o),
-            //o = peer_info_trader_task => report_exit("Peer Info Trader", o),
+            o = peer_info_trader_task => report_exit("Peer Info Trader", o),
         };
     }
 
