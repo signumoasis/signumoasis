@@ -35,7 +35,7 @@ fn main() {
 
         use signum_node_rs::server;
         let runner = tokio::runtime::Runtime::new().expect("unable to get a tokio runtime");
-        runner.spawn(server::setup());
+        runner.spawn(server::run(settings.clone()));
         if headless || !cfg!(feature = "desktop") {
             tracing::info!("Running in headless mode. Stop with CTRL-C.");
             runner.block_on(async {

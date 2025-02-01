@@ -3,9 +3,9 @@ use dioxus::prelude::*;
 use dioxus_fullstack::ServeConfigBuilder;
 use tokio::net::TcpListener;
 
-use crate::ui::components::App;
+use crate::{configuration::Settings, ui::components::App};
 
-pub async fn setup() {
+pub async fn run(settings: Settings) {
     tracing::info!("Launching axum server");
     let app = axum::Router::new().serve_dioxus_application(ServeConfigBuilder::new(), App);
 
