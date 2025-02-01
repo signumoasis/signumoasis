@@ -4,17 +4,15 @@ use anyhow::{Context, Result};
 use tracing::Instrument;
 use uuid::Uuid;
 
-use crate::{
-    chain::models::datastore::Datastore,
-    configuration::Settings,
-    srs_protocol::{
-        b1_peer::B1Peer,
-        peers::{update_db_peer_info, BasicPeerClient},
-    },
+use crate::protocols::b1::{
+    peers::{update_db_peer_info, BasicPeerClient},
+    B1Peer,
 };
 
+use super::{B1Datastore, B1Settings};
+
 #[tracing::instrument(skip_all)]
-pub async fn run_peer_finder_forever(database: Datastore, settings: Settings) -> Result<()> {
+pub async fn run_peer_finder_forever(database: B1Datastore, settings: B1Settings) -> Result<()> {
     tracing::info!("Starting Peer Finder");
     loop {
         // Open the job-level span here so we also include the job_id in the error message if this result comes back Error.
@@ -37,7 +35,7 @@ pub async fn run_peer_finder_forever(database: Datastore, settings: Settings) ->
 /// If no peers exist in the database, it will read from the configuration bootstrap
 /// peers list.
 #[tracing::instrument(name = "Peer Finder", skip_all)]
-pub async fn peer_finder(mut database: Datastore, settings: Settings) -> Result<()> {
+pub async fn peer_finder(mut database: B1Datastore, settings: B1Settings) -> Result<()> {
     // Try to get random peer from database
     let peer_address = database.get_random_peer().await;
 

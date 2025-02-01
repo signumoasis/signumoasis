@@ -6,12 +6,12 @@ use reqwest::Response;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-use crate::{
-    chain::models::Block,
-    srs_protocol::models::{b1_block::B1Block, peer_address::PeerAddress, peer_info::PeerInfo},
-};
+use crate::{common::models::PeerAddress, protocols::b1::models::b1_block::B1Block};
 
-use super::peers::{BasicPeerClient, DownloadResult, PeerCommunicationError};
+use super::{
+    models::peer_info::PeerInfo,
+    peers::{BasicPeerClient, DownloadResult, PeerCommunicationError},
+};
 
 #[derive(Debug)]
 pub struct B1Peer {
@@ -88,7 +88,7 @@ impl BasicPeerClient for B1Peer {
             peer: self.peer.clone(),
             start_height: height,
             number_of_blocks,
-            blocks: Vec::<Block>::new(),
+            blocks: Vec::<B1Block>::new(),
         };
 
         //TODO: Process the blocks just downloaded and return the correct Result

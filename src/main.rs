@@ -1,4 +1,7 @@
-use signum_node_rs::telemetry;
+use signum_node_rs::{
+    protocols::{b1::B1Protocol, Protocol},
+    telemetry,
+};
 
 // TODO: Steps to finish:
 // * [x] Add own telemetry compatible with dx serve if possible
@@ -12,7 +15,7 @@ use signum_node_rs::telemetry;
 //       and provide an automatic login capability - excluded from WASM/web mode
 // * [ ] Find out if wasm mode can securely store credentials without leaking them to the server
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     // INFO: Begin by setting up tracing
     telemetry::init_subscriber("signum-node-rs".into(), "info".into(), std::io::stdout);
 
@@ -63,4 +66,6 @@ fn main() {
         tracing::info!("Launching wasm app");
         dioxus::prelude::LaunchBuilder::web().launch(App);
     }
+
+    Ok(())
 }

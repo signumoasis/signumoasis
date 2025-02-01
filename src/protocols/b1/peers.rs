@@ -1,35 +1,32 @@
 use std::{str::FromStr, time::Duration};
 
-use actix_web::ResponseError;
 use anyhow::{Context, Result};
 use num_bigint::BigUint;
 use reqwest::Response;
 use serde_json::{json, Value};
 
-use crate::{
-    chain::models::{datastore::Datastore, Block},
-    oasis_protocol::oasis_peer::OasisPeer,
-    srs_protocol::{
-        b1_peer::B1Peer,
-        models::{peer_address::PeerAddress, peer_info::PeerInfo},
-    },
+use crate::common::models::PeerAddress;
+
+use super::{
+    models::{b1_block::B1Block, peer_info::PeerInfo},
+    B1Datastore,
 };
 
 // TODO: Move this to models or something
 /// A downloaded set of blocks.
 #[derive(Debug)]
 pub struct DownloadResult {
-    pub blocks: Vec<Block>,
+    pub blocks: Vec<B1Block>,
     pub peer: PeerAddress,
     pub start_height: u64,
     pub number_of_blocks: u32,
 }
 
-#[derive(Debug)]
-pub enum BlockSelect {
-    BRS(B1Peer),
-    OASIS(OasisPeer),
-}
+//#[derive(Debug)]
+//pub enum BlockSelect {
+//    BRS(B1Peer),
+//    OASIS(OasisPeer),
+//}
 
 #[allow(async_fn_in_trait)]
 pub trait BasicPeerClient {
@@ -106,7 +103,7 @@ async fn get_peer_info(peer: &PeerAddress) -> Result<(PeerInfo, String), PeerCom
 /// Requests peer information from the supplied PeerAddress. Updates the database
 /// with the acquired information. Returns a [`anyhow::Result<()>`].
 #[tracing::instrument(name = "Update Info Task", skip_all)]
-pub async fn update_db_peer_info(database: Datastore, peer: PeerAddress) -> Result<()> {
+pub async fn update_db_peer_info(database: B1Datastore, peer: PeerAddress) -> Result<()> {
     let peer_info = get_peer_info(&peer).await;
     match peer_info {
         Ok(info) => {
@@ -199,8 +196,6 @@ pub enum PeerCommunicationError {
     UnexpectedError(#[from] anyhow::Error),
 }
 
-impl ResponseError for PeerCommunicationError {}
-
 impl std::fmt::Debug for PeerCommunicationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::error_chain_fmt(self, f)
@@ -210,14 +205,14 @@ impl std::fmt::Debug for PeerCommunicationError {
 /// Blacklist a client for minutes * blacklist_count, for a maximum of 24 hours.
 /// blacklist_count increments by 1 each time a node is blacklisted, so it will
 /// be ignored for longer and longer, up to 24 hours before retry.
-pub async fn blacklist_peer(database: Datastore, peer: PeerAddress) -> Result<()> {
+pub async fn blacklist_peer(database: B1Datastore, peer: PeerAddress) -> Result<()> {
     let _response = database.blacklist_peer(&peer).await?;
     Ok(())
 }
 
 /// De-blacklist a node. This should happen anytime this node queries it and receives
 /// a correct response, or if it talks to this node with a correct introduction.
-pub async fn deblacklist_peer(database: Datastore, peer: PeerAddress) -> Result<()> {
+pub async fn deblacklist_peer(database: B1Datastore, peer: PeerAddress) -> Result<()> {
     let _response = database.deblacklist_peer(peer);
     Ok(())
 }
