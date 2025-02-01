@@ -1,7 +1,4 @@
-use signum_node_rs::{
-    protocols::{b1::B1Protocol, Protocol},
-    telemetry,
-};
+use signum_node_rs::telemetry;
 
 // TODO: Steps to finish:
 // * [x] Add own telemetry compatible with dx serve if possible
