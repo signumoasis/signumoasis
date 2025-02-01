@@ -8,19 +8,22 @@ use surrealdb::{
 
 use crate::{common::datastore::Datastore, protocols::b1::b1_configuration::B1Settings};
 
+#[tracing::instrument(skip_all)]
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     // Get the base execution director
     let base_path = std::env::current_dir().expect("Failed to determine the current directory");
     // Set the configuration file
     let configuration_file = "configuration.yml";
 
+    // Create settings builder
     let settings = config::Config::builder();
 
+    // INFO: Add defaults for settings
     let settings = HistoricalMoments::set_defaults(settings)?;
-
     #[cfg(feature = "server")]
     let settings = B1Settings::set_defaults(settings)?;
 
+    // Override defaults and finalize settings import
     let settings = settings
         //add values from a file
         .add_source(config::File::from(base_path.join(configuration_file)))
@@ -34,13 +37,6 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let settings: Result<Settings, config::ConfigError> = settings.try_deserialize();
     tracing::debug!("Settings values: {:#?}", &settings);
     settings
-}
-
-#[allow(dead_code)]
-trait ConfigBuilderExtensions {
-    fn add_defaults(self) -> Result<Self, config::ConfigError>
-    where
-        Self: Sized;
 }
 
 /// Settings for the node.
@@ -143,6 +139,7 @@ pub struct HistoricalMoments {
 
 // Defaults for HistoricalMoments
 impl HistoricalMoments {
+    #[tracing::instrument(skip_all)]
     fn set_defaults(
         builder: ConfigBuilder<DefaultState>,
     ) -> Result<ConfigBuilder<DefaultState>, ConfigError> {
