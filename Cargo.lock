@@ -6083,7 +6083,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "signum-node-rs"
+name = "signum-oasis"
 version = "0.1.0"
 dependencies = [
  "anyhow",

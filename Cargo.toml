@@ -1,5 +1,5 @@
 [package]
-name = "signum-node-rs"
+name = "signum-oasis"
 version = "0.1.0"
 authors = ["damccull <401104+damccull@users.noreply.github.com>"]
 edition = "2021"
@@ -10,7 +10,7 @@ path = "src/lib.rs"
 
 [[bin]]
 path = "src/main.rs"
-name = "signum-node-rs"
+name = "signum-oasis"
 
 [features]
 default = ["web"]
