@@ -1,4 +1,4 @@
-use signum_node_rs::telemetry;
+use signum_oasis::telemetry;
 
 // TODO: Steps to finish:
 // * [x] Add own telemetry compatible with dx serve if possible
@@ -29,9 +29,9 @@ fn main() -> anyhow::Result<()> {
 
         tracing::info!("Loading settings");
         let settings =
-            signum_node_rs::configuration::get_configuration().expect("unable to load settings");
+            signum_oasis::configuration::get_configuration().expect("unable to load settings");
 
-        use signum_node_rs::server;
+        use signum_oasis::server;
         let runner = tokio::runtime::Runtime::new().expect("unable to get a tokio runtime");
         runner.spawn(server::run(settings.clone()));
 
@@ -51,7 +51,7 @@ fn main() -> anyhow::Result<()> {
     // INFO: Launch desktop app code
     #[cfg(feature = "desktop")]
     if !headless {
-        use signum_node_rs::ui::components::App;
+        use signum_oasis::ui::components::App;
         tracing::info!("Loading desktop gui");
         dioxus::prelude::LaunchBuilder::desktop().launch(App);
     }
@@ -59,7 +59,7 @@ fn main() -> anyhow::Result<()> {
     // INFO: WASM-only code. Only runs in the WASM bin
     #[cfg(all(feature = "web", target_arch = "wasm32"))]
     {
-        use signum_node_rs::ui::components::App;
+        use signum_oasis::ui::components::App;
         tracing::info!("Launching wasm app");
         dioxus::prelude::LaunchBuilder::web().launch(App);
     }

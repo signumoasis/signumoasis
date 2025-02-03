@@ -27,10 +27,11 @@ pub async fn run(settings: Settings) -> anyhow::Result<()> {
     let b1 = B1Protocol::initialize(db.clone(), settings.clone(), chain_message_tx.clone());
 
     tokio::spawn(async move { b1.run().await });
-
     let appstate = AppState {
         datastore: db.clone(),
     };
+    tracing::debug!("APPSTATE: {:#?}", &appstate);
+
     let app = B1Protocol::register_routes(app).route("/health_check", get(health_check));
     let app = app.with_state(appstate);
 
@@ -56,6 +57,7 @@ impl FromRef<AppState> for Datastore {
     }
 }
 
+#[tracing::instrument(skip_all)]
 async fn health_check() -> impl IntoResponse {
     (StatusCode::OK, "Healthy".to_owned())
 }
