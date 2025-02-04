@@ -16,9 +16,9 @@ use crate::common::datastore::Datastore;
 use dioxus::prelude::*;
 use futures::StreamExt;
 
-#[server(endpoint = "backend_list_peers", output = server_fn::codec::StreamingText)]
+#[server(endpoint = "backend_list_peers", output = server_fn::codec::StreamingJson)]
 #[tracing::instrument(skip_all)]
-pub async fn count_peers() -> Result<server_fn::codec::TextStream, ServerFnError> {
+pub async fn count_peers() -> Result<server_fn::codec::JsonStream<u32>, ServerFnError> {
     use crate::protocols::b1::B1Datastore;
 
     tracing::trace!("Trying to get datastore from dioxus context");
@@ -27,14 +27,14 @@ pub async fn count_peers() -> Result<server_fn::codec::TextStream, ServerFnError
     let datastore: B1Datastore = datastore.into();
     let peers = datastore.count_peers().await.map_err(ServerFnError::new)?;
     tracing::trace!("Got surreal stream");
-    let stream = server_fn::codec::TextStream::new(peers.map(|n| {
+    let stream = server_fn::codec::JsonStream::<u32>::new(peers.map(|n| {
         //tracing::debug!("Notification Result: {:#?}", &n);
         match n {
             Ok(notification) => {
                 //tracing::debug!("Notification: {:#?}", &notification);
                 let result = notification.data.number_of_peers;
                 tracing::debug!("Notification: {:#?}", &result);
-                Ok(result.to_string())
+                Ok(result)
             }
             Err(e) => {
                 tracing::debug!("unable to get count: {:#?}", &e);

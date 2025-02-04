@@ -6,13 +6,13 @@ use crate::protocols::b1::count_peers;
 
 #[component]
 pub fn GetPeerCount() -> Element {
-    let mut peer_count = use_signal(|| "0".to_owned());
+    let mut peer_count = use_signal(|| 0u32);
     use_future(move || async move {
         if let Ok(stream) = count_peers().await {
             let mut stream = stream.into_inner();
-            while let Some(Ok(text)) = stream.next().await {
-                tracing::debug!("Component count text: {:?}", &text);
-                *peer_count.write() = text;
+            while let Some(Ok(total)) = stream.next().await {
+                tracing::debug!("Component count value: {:?}", &total);
+                *peer_count.write() = total;
             }
         }
     });
