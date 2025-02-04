@@ -1,10 +1,14 @@
 use std::time::Duration;
 
 use anyhow::{Context, Result};
+use serde::{Deserialize, Serialize};
 use surrealdb::{
     engine::any::Any,
     method::Stream,
-    sql::statements::{BeginStatement, CommitStatement},
+    sql::{
+        statements::{BeginStatement, CommitStatement},
+        Thing,
+    },
     Response, Surreal,
 };
 
@@ -102,8 +106,9 @@ impl B1Datastore {
     //        .ok_or_else(|| anyhow::anyhow!("couldn't convert option to result"))?;
     //    Ok(count)
     //}
-    pub async fn count_peers(&self) -> Result<Stream<Vec<i64>>> {
+    pub async fn count_peers(&self) -> Result<Stream<Vec<PeerCountStreamObject>>> {
         let response = self.db.select("peer_count").live().await?;
+
         Ok(response)
     }
 
@@ -302,4 +307,10 @@ impl std::fmt::Debug for DatastoreError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::error_chain_fmt(self, f)
     }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct PeerCountStreamObject {
+    pub id: Thing,
+    pub number_of_peers: u32,
 }

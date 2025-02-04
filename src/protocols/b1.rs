@@ -21,18 +21,19 @@ use futures::StreamExt;
 pub async fn count_peers() -> Result<server_fn::codec::TextStream, ServerFnError> {
     use crate::protocols::b1::B1Datastore;
 
-    tracing::debug!("Trying to get datastore from dioxus context");
+    tracing::trace!("Trying to get datastore from dioxus context");
     let FromContext::<Datastore>(datastore) = extract().await?;
 
     let datastore: B1Datastore = datastore.into();
     let peers = datastore.count_peers().await.map_err(ServerFnError::new)?;
-    tracing::debug!("Got surreal stream");
+    tracing::trace!("Got surreal stream");
     let stream = server_fn::codec::TextStream::new(peers.map(|n| {
-        tracing::debug!("Notification Result: {:#?}", &n);
+        //tracing::debug!("Notification Result: {:#?}", &n);
         match n {
             Ok(notification) => {
-                tracing::debug!("Notification: {:#?}", &notification);
-                let result = notification.data;
+                //tracing::debug!("Notification: {:#?}", &notification);
+                let result = notification.data.number_of_peers;
+                tracing::debug!("Notification: {:#?}", &result);
                 Ok(result.to_string())
             }
             Err(e) => {
@@ -40,16 +41,6 @@ pub async fn count_peers() -> Result<server_fn::codec::TextStream, ServerFnError
                 Err(ServerFnError::new("unable to get count"))
             }
         }
-
-        //if let Ok(notification) = n {
-        //    tracing::debug!("Notification: {:#?}", &notification);
-        //    let result = notification.data;
-        //    Ok(result.to_string())
-        //} else {
-        //    tracing::debug!("unable to get count");
-        //    Err(ServerFnError::new("unable to get count"))
-        //}
     }));
-    //tracing::debug!("Peer count: {}", &peers);
     Ok(stream)
 }

@@ -11,6 +11,7 @@ pub fn GetPeerCount() -> Element {
         if let Ok(stream) = count_peers().await {
             let mut stream = stream.into_inner();
             while let Some(Ok(text)) = stream.next().await {
+                tracing::debug!("Component count text: {:?}", &text);
                 *peer_count.write() = text;
             }
         }
