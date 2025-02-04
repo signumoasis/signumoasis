@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::common::count_peers;
+use crate::protocols::b1::count_peers;
 
 #[component]
 pub fn GetPeerCount() -> Element {

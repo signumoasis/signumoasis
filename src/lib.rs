@@ -3,7 +3,6 @@ pub mod chain;
 pub mod common;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod configuration;
-#[cfg(not(target_arch = "wasm32"))]
 pub mod protocols;
 pub mod server;
 pub mod server_stuff;

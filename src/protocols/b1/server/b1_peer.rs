@@ -6,12 +6,12 @@ use reqwest::Response;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-use crate::{common::models::PeerAddress, protocols::b1::models::b1_block::B1Block};
-
-use super::{
-    models::peer_info::PeerInfo,
-    peers::{BasicPeerClient, DownloadResult, PeerCommunicationError},
+use crate::{
+    common::models::PeerAddress,
+    protocols::b1::models::{B1Block, PeerInfo},
 };
+
+use super::peers::{BasicPeerClient, DownloadResult, PeerCommunicationError};
 
 #[derive(Debug)]
 pub struct B1Peer {

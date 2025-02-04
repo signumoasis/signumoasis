@@ -9,7 +9,7 @@ use surrealdb::{
 
 use crate::{
     common::{datastore::Datastore, models::PeerAddress},
-    protocols::b1::models::peer_info::PeerInfo,
+    protocols::b1::models::PeerInfo,
 };
 
 #[derive(Clone, Debug)]

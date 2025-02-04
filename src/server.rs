@@ -10,7 +10,7 @@ use tokio::net::TcpListener;
 use crate::{
     common::datastore::Datastore,
     configuration::Settings,
-    protocols::{b1::B1Protocol, ChainMessage, Protocol},
+    protocols::{b1::B1Protocol, traits::Protocol, ChainMessage},
     ui::components::App,
 };
 

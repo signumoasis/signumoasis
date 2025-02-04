@@ -5,12 +5,12 @@ use num_bigint::BigUint;
 use reqwest::Response;
 use serde_json::{json, Value};
 
-use crate::common::models::PeerAddress;
-
-use super::{
-    models::{b1_block::B1Block, peer_info::PeerInfo},
-    B1Datastore,
+use crate::{
+    common::models::PeerAddress,
+    protocols::b1::models::{B1Block, PeerInfo},
 };
+
+use super::B1Datastore;
 
 // TODO: Move this to models or something
 /// A downloaded set of blocks.

@@ -1,28 +1,13 @@
-#![cfg(feature = "server")]
 use std::{
     fmt::{Debug, Display},
     sync::mpsc,
 };
 
-use axum::Router;
+#[cfg(feature = "server")]
 use tokio::task::JoinError;
 
-use crate::{common::datastore::Datastore, configuration::Settings};
-
 pub mod b1;
-
-#[allow(async_fn_in_trait)]
-pub trait Protocol {
-    async fn run(&self);
-    fn initialize(
-        datastore: Datastore,
-        settings: Settings,
-        chain_message_tx: mpsc::Sender<ChainMessage>,
-    ) -> Self;
-    fn register_routes<S>(router: Router<S>) -> Router<S>
-    where
-        S: Clone + Send + Sync + 'static;
-}
+pub mod traits;
 
 /// Messages to the Chain
 pub enum ChainMessage {
@@ -37,6 +22,7 @@ pub enum PluginMessage {
     BadBlock,
 }
 
+#[cfg(feature = "server")]
 pub fn report_exit(task_name: &str, outcome: Result<Result<(), impl Debug + Display>, JoinError>) {
     match outcome {
         Ok(Ok(())) => {

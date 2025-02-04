@@ -5,7 +5,7 @@ use tracing::Instrument;
 use uuid::Uuid;
 
 use crate::protocols::b1::{
-    peers::{update_db_peer_info, BasicPeerClient},
+    server::peers::{update_db_peer_info, BasicPeerClient},
     B1Peer,
 };
 

@@ -44,7 +44,7 @@ impl PeerToPeerSettings {
     ) -> Result<ConfigBuilder<DefaultState>, ConfigError> {
         builder
             .set_default("b1protocol.p2p.bootstrap_peers", {
-              vec![
+                vec![
                     "australia.signum.network:8123",
                     "brazil.signum.network:8123",
                     "canada.signum.network:8123",
