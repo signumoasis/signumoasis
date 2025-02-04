@@ -3,6 +3,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use surrealdb::{
     engine::any::Any,
+    method::Stream,
     sql::statements::{BeginStatement, CommitStatement},
     Response, Surreal,
 };
@@ -85,21 +86,25 @@ impl B1Datastore {
         Ok(response)
     }
 
-    pub async fn count_peers(&self) -> Result<u32> {
-        let mut response = self
-            .db
-            .query(
-                r#"
-                SELECT count() as count FROM peer GROUP ALL
-                "#,
-            )
-            .await
-            .context("count not get peer count")?;
-        let count = response
-            .take::<Option<u32>>("count")
-            .context("query finished but coudn't take peer count")?
-            .ok_or_else(|| anyhow::anyhow!("couldn't convert option to result"))?;
-        Ok(count)
+    //pub async fn count_peers(&self) -> Result<u32> {
+    //    let mut response = self
+    //        .db
+    //        .query(
+    //            r#"
+    //            SELECT count() as count FROM peer GROUP ALL
+    //            "#,
+    //        )
+    //        .await
+    //        .context("count not get peer count")?;
+    //    let count = response
+    //        .take::<Option<u32>>("count")
+    //        .context("query finished but coudn't take peer count")?
+    //        .ok_or_else(|| anyhow::anyhow!("couldn't convert option to result"))?;
+    //    Ok(count)
+    //}
+    pub async fn count_peers(&self) -> Result<Stream<Vec<u32>>> {
+        let response = self.db.select("peer_count").live().await?;
+        Ok(response)
     }
 
     /// Manually deblacklists a peer.

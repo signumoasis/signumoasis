@@ -6094,6 +6094,7 @@ dependencies = [
  "dioxus-cli-config",
  "dioxus-fullstack",
  "dioxus-web",
+ "futures",
  "http",
  "itertools 0.14.0",
  "num-bigint",
