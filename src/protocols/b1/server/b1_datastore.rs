@@ -102,7 +102,7 @@ impl B1Datastore {
     //        .ok_or_else(|| anyhow::anyhow!("couldn't convert option to result"))?;
     //    Ok(count)
     //}
-    pub async fn count_peers(&self) -> Result<Stream<Vec<u32>>> {
+    pub async fn count_peers(&self) -> Result<Stream<Vec<i64>>> {
         let response = self.db.select("peer_count").live().await?;
         Ok(response)
     }

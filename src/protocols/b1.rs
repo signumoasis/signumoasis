@@ -28,6 +28,7 @@ pub async fn count_peers() -> Result<server_fn::codec::TextStream, ServerFnError
     let peers = datastore.count_peers().await.map_err(ServerFnError::new)?;
     tracing::debug!("Got surreal stream");
     let stream = server_fn::codec::TextStream::new(peers.map(|n| {
+        tracing::debug!("Notification Result: {:#?}", &n);
         match n {
             Ok(notification) => {
                 tracing::debug!("Notification: {:#?}", &notification);
