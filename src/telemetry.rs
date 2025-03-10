@@ -8,8 +8,8 @@ use tracing_subscriber::fmt::MakeWriter;
 #[cfg(feature = "server")]
 use tracing_subscriber::{prelude::*, EnvFilter};
 
-/// Sets up a tracing subscriber.
 // INFO: Only used on Non-WASM32 targets with 'bunyan' feature disabled
+/// Sets up a tracing subscriber.
 #[cfg(all(not(feature = "bunyan"), not(target_arch = "wasm32")))]
 pub fn get_subscriber<Sink>(
     _name: String,
@@ -57,8 +57,8 @@ where
     subscriber.with(fmt_layer.with_filter(filter_layer))
 }
 
-/// Sets up a tracing subscriber.
 // INFO: Only used on Non-WASM32 targets with 'bunyan' feature enabled
+/// Sets up a tracing subscriber.
 #[cfg(all(feature = "bunyan", not(target_arch = "wasm32")))]
 pub fn get_subscriber<Sink>(
     name: String,
@@ -92,8 +92,8 @@ where
     subscriber.with(bunyan_layer)
 }
 
-/// Sets up a tracing subscriber.
 // INFO: Only used on WASM32 targets
+/// Sets up a tracing subscriber.
 #[cfg(target_arch = "wasm32")]
 pub fn get_subscriber<Sink>(
     _name: String,
