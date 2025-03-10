@@ -1,7 +1,7 @@
 #![cfg(feature = "server")]
 use std::sync::mpsc;
 
-use axum::Router;
+use axum::{extract::FromRef, Router};
 
 use crate::{common::datastore::Datastore, configuration::Settings};
 
@@ -15,7 +15,5 @@ pub trait Protocol {
         settings: Settings,
         chain_message_tx: mpsc::Sender<ChainMessage>,
     ) -> Self;
-    fn register_routes<S>(router: Router<S>) -> Router<S>
-    where
-        S: Clone + Send + Sync + 'static;
+    fn register_routes(&self, router: Router) -> Router;
 }

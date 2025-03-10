@@ -1,16 +1,19 @@
+#![cfg(feature = "server")]
 mod b1_configuration;
 mod b1_datastore;
 mod b1_peer;
+pub mod client_api;
 pub mod peer_finder;
 pub mod peer_info_trader;
 pub mod peers;
 
 use std::sync::mpsc;
 
-use axum::Router;
+use axum::{extract::FromRef, routing::get, Router};
 pub use b1_configuration::*;
 pub use b1_datastore::*;
 pub use b1_peer::*;
+use client_api::get_peer_count;
 use peer_finder::run_peer_finder_forever;
 use peer_info_trader::run_peer_info_trader_forever;
 
@@ -79,11 +82,11 @@ impl Protocol for B1Protocol {
         }
     }
 
-    fn register_routes<S>(router: Router<S>) -> Router<S>
-    where
-        S: Clone + Send + Sync + 'static,
-    {
-        router
+    fn register_routes(&self, router: Router) -> Router {
+        let b1router = Router::new()
+            .route("/peer_count", get(get_peer_count))
+            .with_state(self.datastore.clone());
+        router.nest("/api/b1", b1router)
     }
 }
 

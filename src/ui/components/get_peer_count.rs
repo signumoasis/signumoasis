@@ -1,12 +1,17 @@
 use dioxus::prelude::*;
 
 use futures::StreamExt;
+use reqwest::Client;
 
 use crate::protocols::b1::count_peers;
 
 #[component]
 pub fn GetPeerCount() -> Element {
     let mut peer_count = use_signal(|| 0u32);
+    use_server_future(|| async move {
+        let client = Client::builder().build().unwrap();
+        let url = "localhost:8080";
+    })?;
     use_future(move || async move {
         if let Ok(stream) = count_peers().await {
             let mut stream = stream.into_inner();

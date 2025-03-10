@@ -1,7 +1,11 @@
 #![cfg(feature = "server")]
 use std::sync::{mpsc, Arc};
 
-use axum::{extract::FromRef, response::IntoResponse, routing::get};
+use axum::{
+    extract::{FromRef, State},
+    response::IntoResponse,
+    routing::get,
+};
 use dioxus::prelude::*;
 use dioxus_fullstack::ServeConfigBuilder;
 use http::StatusCode;
@@ -42,10 +46,11 @@ pub async fn run(settings: Settings) -> anyhow::Result<()> {
 
     let b1 = B1Protocol::initialize(db.clone(), settings.clone(), chain_message_tx.clone());
 
-    tokio::spawn(async move { b1.run().await });
-
-    let app = B1Protocol::register_routes(app).route("/health_check", get(health_check));
+    let app = app.route("/health_check", get(health_check));
     let app = app.with_state(axum_app_state);
+    let app = b1.register_routes(app);
+
+    tokio::spawn(async move { b1.run().await });
 
     let socket_address = dioxus_cli_config::fullstack_address_or_localhost();
     let listener = TcpListener::bind(&socket_address).await.unwrap();
@@ -70,6 +75,6 @@ impl FromRef<AppState> for Datastore {
 }
 
 #[tracing::instrument(skip_all)]
-async fn health_check() -> impl IntoResponse {
+async fn health_check(State(ds): State<Datastore>) -> impl IntoResponse {
     (StatusCode::OK, "Healthy".to_owned())
 }

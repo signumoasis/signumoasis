@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use anyhow::{Context, Result};
+use axum::extract::FromRef;
 use serde::{Deserialize, Serialize};
 use surrealdb::{
     engine::any::Any,
@@ -15,6 +16,7 @@ use surrealdb::{
 use crate::{
     common::{datastore::Datastore, models::PeerAddress},
     protocols::b1::models::PeerInfo,
+    server::AppState,
 };
 
 #[derive(Clone, Debug)]
@@ -87,28 +89,6 @@ impl B1Datastore {
             .bind(("announced_address", peer.clone()))
             .await
             .context("could not create a new peer in the database")?;
-        Ok(response)
-    }
-
-    //pub async fn count_peers(&self) -> Result<u32> {
-    //    let mut response = self
-    //        .db
-    //        .query(
-    //            r#"
-    //            SELECT count() as count FROM peer GROUP ALL
-    //            "#,
-    //        )
-    //        .await
-    //        .context("count not get peer count")?;
-    //    let count = response
-    //        .take::<Option<u32>>("count")
-    //        .context("query finished but coudn't take peer count")?
-    //        .ok_or_else(|| anyhow::anyhow!("couldn't convert option to result"))?;
-    //    Ok(count)
-    //}
-    pub async fn count_peers(&self) -> Result<Stream<Vec<PeerCountStreamObject>>> {
-        let response = self.db.select("peer_count").live().await?;
-
         Ok(response)
     }
 
@@ -237,6 +217,28 @@ impl B1Datastore {
                 "could not increment attempts_since_last_seen for {}",
                 &peer
             ))?;
+        Ok(response)
+    }
+
+    pub async fn peer_count(&self) -> Result<u32> {
+        let mut response = self
+            .db
+            .query(
+                r#"
+                SELECT count() as count FROM peer GROUP ALL
+                "#,
+            )
+            .await
+            .context("count not get peer count")?;
+        let count = response
+            .take::<Option<u32>>("count")
+            .context("query finished but coudn't take peer count")?
+            .ok_or_else(|| anyhow::anyhow!("couldn't convert option to result"))?;
+        Ok(count)
+    }
+    pub async fn peer_count_stream(&self) -> Result<Stream<Vec<PeerCountStreamObject>>> {
+        let response = self.db.select("peer_count").live().await?;
+
         Ok(response)
     }
 

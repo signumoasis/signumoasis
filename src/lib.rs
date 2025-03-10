@@ -47,27 +47,27 @@ where
         .map(|(x, _)| x)
 }
 
-//#[cfg(test)]
-//mod test {
-//    use crate::statistics_mode;
-//
-//    #[test]
-//    fn statistics_mode_returns_some_max_value() {
-//        let test_data = vec![4, 1, 1, 2, 4, 3, 4, 5];
-//
-//        let result = statistics_mode(test_data);
-//        assert_eq!(result, Some(4));
-//    }
-//
-//    #[test]
-//    fn statistics_mode_returns_none_if_no_mode() {
-//        let test_data_no_repeats = vec![1, 2, 3, 4, 5];
-//        let test_data_multiple_options = vec![1, 1, 2, 2, 3, 4, 5];
-//
-//        let result = statistics_mode(test_data_no_repeats);
-//        assert_eq!(result, None, "Failed on no repeats");
-//
-//        let result = statistics_mode(test_data_multiple_options);
-//        assert_eq!(result, None, "Failed on multiple options");
-//    }
-//}
+#[cfg(test)]
+mod test {
+    use crate::statistics_mode;
+
+    #[test]
+    fn statistics_mode_returns_some_max_value() {
+        let test_data = vec![4, 1, 1, 2, 4, 3, 4, 5];
+
+        let result = statistics_mode(test_data);
+        assert_eq!(result, Some(4));
+    }
+
+    #[test]
+    fn statistics_mode_returns_none_if_no_mode() {
+        let test_data_no_repeats = vec![1, 2, 3, 4, 5];
+        let test_data_multiple_options = vec![1, 1, 2, 2, 3, 4, 5];
+
+        let result = statistics_mode(test_data_no_repeats);
+        assert_eq!(result, None, "Failed on no repeats");
+
+        let result = statistics_mode(test_data_multiple_options);
+        assert_eq!(result, None, "Failed on multiple options");
+    }
+}

@@ -25,7 +25,10 @@ pub async fn count_peers() -> Result<server_fn::codec::JsonStream<u32>, ServerFn
     let FromContext::<Datastore>(datastore) = extract().await?;
 
     let datastore: B1Datastore = datastore.into();
-    let peers = datastore.count_peers().await.map_err(ServerFnError::new)?;
+    let peers = datastore
+        .peer_count_stream()
+        .await
+        .map_err(ServerFnError::new)?;
     tracing::trace!("Got surreal stream");
     let stream = server_fn::codec::JsonStream::<u32>::new(peers.map(|n| {
         //tracing::debug!("Notification Result: {:#?}", &n);
@@ -33,7 +36,7 @@ pub async fn count_peers() -> Result<server_fn::codec::JsonStream<u32>, ServerFn
             Ok(notification) => {
                 //tracing::debug!("Notification: {:#?}", &notification);
                 let result = notification.data.number_of_peers;
-                tracing::debug!("Notification: {:#?}", &result);
+                tracing::debug!("Notification value: {:#?}", &result);
                 Ok(result)
             }
             Err(e) => {
