@@ -104,17 +104,17 @@
               rustPlatform.bindgenHook
               stdenv.cc.cc.lib
               (wasm-bindgen-cli.overrideAttrs (oldAttrs: rec {
-                version = "0.2.99";
+                version = "0.2.100";
                 src = fetchCrate {
                   pname = "wasm-bindgen-cli";
-                  version = "0.2.99";
-                  hash = "sha256-1AN2E9t/lZhbXdVznhTcniy+7ZzlaEp/gwLEAucs6EA=";
+                  version = version;
+                  hash = "sha256-3RJzK7mkYFrs7C/WkhW9Rr4LdP5ofb2FdYGz1P7Uxog=";
                 };
 
                 cargoDeps = rustPlatform.fetchCargoVendor {
                   inherit src;
                   inherit (src) pname version;
-                  hash = "sha256-HGcqXb2vt6nAvPXBZOJn7nogjIoAgXno2OJBE1trHpc=";
+                  hash = "sha256-qsO12332HSjWCVKtf1cUePWWb9IdYUmT+8OPj/XP2WE=";
                 };
               }))
             ]
@@ -136,25 +136,18 @@
               cargo-nextest
               cargo-watch
               (cargo-whatfeatures.overrideAttrs (oldAttrs: rec {
-                pname = "cargo-whatfeatures";
                 version = "0.9.13";
-                src = fetchFromGitHub {
-                  owner = "museun";
-                  repo = "cargo-whatfeatures";
-                  rev = "v0.9.13";
-                  sha256 = "sha256-YJ08oBTn9OwovnTOuuc1OuVsQp+/TPO3vcY4ybJ26Ms=";
+                src = fetchCrate {
+                  pname = "cargo-whatfeatures";
+                  version = "${version}";
+                  hash = "sha256-Nbyr7u47c6nImzYJvPVLfbqgDvzyXqR1C1tOLximuHU=";
                 };
-                cargoDeps = oldAttrs.cargoDeps.overrideAttrs (
-                  lib.const {
-                    name = "${pname}-vendor.tar.gz";
-                    inherit src;
-                    outputHash = "sha256-8pccXL+Ud3ufYcl2snoSxIfGM1tUR53GUrIp397Rh3o=";
-                  }
-                );
-                cargoBuildFlags = [
-                  "--no-default-features"
-                  "--features=rustls"
-                ];
+
+                cargoDeps = rustPlatform.fetchCargoVendor {
+                  inherit src;
+                  inherit (src) pname version;
+                  hash = "sha256-p95aYXsZM9xwP/OHEFwq4vRiXoO1n1M0X3TNbleH+Zw=";
+                };
               }))
               dioxus-cli
               gdb
