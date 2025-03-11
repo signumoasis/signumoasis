@@ -8,7 +8,6 @@ use surrealdb::{
 
 use crate::{common::datastore::Datastore, protocols::b1::B1Settings};
 
-
 #[tracing::instrument(skip_all)]
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     // Get the base execution director
@@ -103,7 +102,19 @@ async fn initialize_database(db: Surreal<Any>) -> Result<Surreal<Any>, anyhow::E
     tracing::info!("Defining unique index on announced_address field");
     db.query(
         r#"
-            DEFINE INDEX unique_announced_address ON peer COLUMNS announced_address UNIQUE
+            DEFINE TABLE IF NOT EXISTS peer SCHEMALESS;
+
+            DEFINE INDEX unique_announced_address ON peer COLUMNS announced_address UNIQUE;
+
+            DEFINE TABLE IF NOT EXISTS peer_count AS
+            SELECT
+            (
+                SELECT VALUE count()
+                FROM ONLY peer
+                GROUP ALL
+                LIMIT 1
+            ).count ?? 0 AS number_of_peers
+            FROM peer GROUP ALL;
         "#,
     )
     .await?;
