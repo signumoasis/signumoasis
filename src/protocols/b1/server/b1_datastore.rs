@@ -225,7 +225,9 @@ impl B1Datastore {
             .db
             .query(
                 r#"
-                SELECT count() as count FROM peer GROUP ALL
+                    -- SELECT count() as count FROM peer GROUP ALL
+                    SELECT VALUE {count: b1.total_peers} FROM peer_dashboard;
+                    -- SELECT b1.total_peers FROM peer_dashboard;
                 "#,
             )
             .await
