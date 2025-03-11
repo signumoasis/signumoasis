@@ -237,7 +237,7 @@ impl B1Datastore {
         Ok(count)
     }
     pub async fn peer_count_stream(&self) -> Result<Stream<Vec<PeerCountStreamObject>>> {
-        let response = self.db.select("peer_count").live().await?;
+        let response = self.db.select("peer_dashboard").live().await?;
 
         Ok(response)
     }

@@ -106,7 +106,7 @@ async fn initialize_database(db: Surreal<Any>) -> Result<Surreal<Any>, anyhow::E
 
             DEFINE INDEX unique_announced_address ON peer COLUMNS announced_address UNIQUE;
 
-            DEFINE TABLE IF NOT EXISTS peer_count AS
+            DEFINE TABLE IF NOT EXISTS peer_dashboard AS
             SELECT
             (
                 SELECT VALUE count()
