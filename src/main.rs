@@ -45,7 +45,6 @@ fn main() -> anyhow::Result<()> {
                     .expect("couldn't listen for ctrl-c for some reason");
             });
         }
-        // TODO: Pass database and settings into this...somehow
     }
 
     // INFO: Launch desktop app code
