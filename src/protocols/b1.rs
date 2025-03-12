@@ -31,10 +31,11 @@ pub async fn count_peers() -> Result<server_fn::codec::JsonStream<u32>, ServerFn
         .map_err(ServerFnError::new)?;
     tracing::trace!("Got surreal stream");
     let stream = server_fn::codec::JsonStream::<u32>::new(peers.map(|n| {
-        //tracing::debug!("Notification Result: {:#?}", &n);
+        tracing::debug!("Notification Result: {:#?}", &n);
         match n {
             Ok(notification) => {
-                //tracing::debug!("Notification: {:#?}", &notification);
+                tracing::debug!("Notification: {:#?}", &notification);
+                // TODO: Change this to a PeersDashboard struct
                 let result = notification.data.number_of_peers;
                 tracing::debug!("Notification value: {:#?}", &result);
                 Ok(result)
