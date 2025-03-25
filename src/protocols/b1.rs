@@ -10,7 +10,6 @@ pub use server::B1Peer;
 pub use server::B1Protocol;
 #[cfg(feature = "server")]
 pub use server::B1Settings;
-use server::PeerCountStreamObject;
 
 #[cfg(feature = "server")]
 use crate::common::datastore::Datastore;
@@ -19,8 +18,7 @@ use futures::StreamExt;
 
 #[server(endpoint = "backend_list_peers", output = server_fn::codec::StreamingJson)]
 #[tracing::instrument(skip_all)]
-pub async fn count_peers(
-) -> Result<server_fn::codec::JsonStream<PeerCountStreamObject>, ServerFnError> {
+pub async fn count_peers() -> Result<server_fn::codec::JsonStream<u32>, ServerFnError> {
     use crate::protocols::b1::B1Datastore;
 
     tracing::trace!("Trying to get datastore from dioxus context");
@@ -32,13 +30,13 @@ pub async fn count_peers(
         .await
         .map_err(ServerFnError::new)?;
     tracing::trace!("Got surreal stream");
-    let stream = server_fn::codec::JsonStream::<PeerCountStreamObject>::new(peers.map(|n| {
+    let stream = server_fn::codec::JsonStream::<u32>::new(peers.map(|n| {
         tracing::debug!("Notification Result: {:#?}", &n);
         match n {
             Ok(notification) => {
                 tracing::debug!("Notification: {:#?}", &notification);
                 // TODO: Change this to a PeersDashboard struct
-                let result = notification.data;
+                let result = notification.data.b1_total_peers;
                 tracing::debug!("Notification value: {:#?}", &result);
                 Ok(result)
             }
