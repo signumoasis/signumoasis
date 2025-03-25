@@ -239,7 +239,7 @@ impl B1Datastore {
         Ok(count)
     }
     pub async fn peer_count_stream(&self) -> Result<Stream<Vec<PeerCountStreamObject>>> {
-        let response = self.db.select("peer_dashboard").live().await?;
+        let response = self.db.select("dashboard").live().await?;
 
         Ok(response)
     }
@@ -316,5 +316,7 @@ impl std::fmt::Debug for DatastoreError {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct PeerCountStreamObject {
     pub id: Thing,
-    pub number_of_peers: u32,
+    pub b1_total_peers: u32,
+    pub b1_allowed_peers: u32,
+    pub b1_blacklisted_peers: u32,
 }
