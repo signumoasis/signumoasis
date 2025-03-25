@@ -52,7 +52,7 @@ impl B1Datastore {
         .query(BeginStatement::default())
         .query(
             r#"
-                UPDATE peer
+                UPDATE b1_peer
                 SET
                     blacklist.count += 1,
                     blacklist.until = time::now() + type::duration(string::concat(math::min([$blacklist_base_minutes * (blacklist.count + 1),1440]),"m"))
@@ -80,7 +80,7 @@ impl B1Datastore {
             .db
             .query(
                 r#"
-                CREATE peer
+                CREATE b1_peer
                 CONTENT {
                     announced_address: $announced_address
                 }
@@ -99,7 +99,7 @@ impl B1Datastore {
             .query(BeginStatement::default())
             .query(
                 r#"
-                UPDATE peer
+                UPDATE b1_peer
                 SET
                     blacklist.count = 0,
                     blacklist.until = null,
@@ -120,7 +120,7 @@ impl B1Datastore {
             .query(
                 r#"
             SELECT announced_address
-            FROM peer
+            FROM b1_peer
             WHERE
                 blacklist.until IS NULL OR blacklist.until < time::now()
                 AND (last_seen is NONE OR last_seen is NULL OR last_seen < $duration)
@@ -144,7 +144,7 @@ impl B1Datastore {
             .query(
                 r#"
                 SELECT announced_address
-                FROM ONLY peer
+                FROM ONLY b1_peer
                 WHERE blacklist.until IS none
                     OR blacklist.until < time::now()
                 ORDER BY rand()
@@ -174,7 +174,7 @@ impl B1Datastore {
             .query(
                 r#"
                 SELECT announced_address
-                FROM peer
+                FROM b1_peer
                 WHERE blacklist.until IS none
                     OR blacklist.until < time::now()
                 ORDER BY rand()
@@ -205,7 +205,7 @@ impl B1Datastore {
             .query(BeginStatement::default())
             .query(
                 r#"
-                UPDATE peer
+                UPDATE b1_peer
                 SET attempts_since_last_seen += 1
                 WHERE announced_address = $peer
             "#,
@@ -225,9 +225,10 @@ impl B1Datastore {
             .db
             .query(
                 r#"
-                    -- SELECT count() as count FROM peer GROUP ALL
-                    SELECT VALUE {count: b1.total_peers} FROM peer_dashboard;
-                    -- SELECT b1.total_peers FROM peer_dashboard;
+                    -- SELECT count() as count FROM b1_peer GROUP ALL
+                    -- SELECT VALUE {count: b1.total_peers} FROM dashboard;
+                    -- SELECT b1.total_peers FROM dashboard;
+                    SELECT b1_total_peers FROM dashboard;
                 "#,
             )
             .await
@@ -256,7 +257,7 @@ impl B1Datastore {
             .query(BeginStatement::default())
             .query(
                 r#"
-                        UPDATE peer
+                        UPDATE b1_peer
                         MERGE {
                             announced_address: $new_announced_address,
                             ip_address: $ip_address,

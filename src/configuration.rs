@@ -102,31 +102,31 @@ async fn initialize_database(db: Surreal<Any>) -> Result<Surreal<Any>, anyhow::E
     tracing::info!("Defining unique index on announced_address field");
     db.query(
         r#"
-            DEFINE TABLE IF NOT EXISTS peer SCHEMALESS;
+            DEFINE TABLE IF NOT EXISTS b1_peer SCHEMALESS;
 
-            DEFINE INDEX unique_announced_address ON peer COLUMNS announced_address UNIQUE;
+            DEFINE INDEX unique_announced_address ON b1_peer COLUMNS announced_address UNIQUE;
 
             DEFINE TABLE IF NOT EXISTS dashboard AS
                 SELECT
                     (
                         SELECT VALUE count()
-                        FROM ONLY peer
+                        FROM ONLY b1_peer
                         GROUP ALL
                         LIMIT 1
                     ).count ?? 0 as b1_total_peers,
                     (
                         SELECT VALUE count()
-                        FROM ONLY peer
+                        FROM ONLY b1_peer
                         WHERE blacklist.until < time::now()
                         GROUP ALL LIMIT 1
                     ).count ?? 0 as b1_allowed_peers,
                     (
                         SELECT VALUE count()
-                        FROM ONLY peer
+                        FROM ONLY b1_peer
                         WHERE blacklist.until >= time::now()
                         GROUP ALL LIMIT 1
                     ).count ?? 0 as b1_blacklisted_peers
-                FROM peer
+                FROM b1_peer
                 GROUP ALL;
         "#,
     )
