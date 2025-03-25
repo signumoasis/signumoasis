@@ -106,15 +106,28 @@ async fn initialize_database(db: Surreal<Any>) -> Result<Surreal<Any>, anyhow::E
 
             DEFINE INDEX unique_announced_address ON peer COLUMNS announced_address UNIQUE;
 
-            DEFINE TABLE IF NOT EXISTS peer_dashboard AS
-            SELECT
-            (
-                SELECT VALUE count()
-                FROM ONLY peer
-                GROUP ALL
-                LIMIT 1
-            ).count ?? 0 AS number_of_peers
-            FROM peer GROUP ALL;
+            DEFINE TABLE IF NOT EXISTS dashboard AS
+                SELECT
+                    (
+                        SELECT VALUE count()
+                        FROM ONLY peer
+                        GROUP ALL
+                        LIMIT 1
+                    ).count ?? 0 as b1_total_peers,
+                    (
+                        SELECT VALUE count()
+                        FROM ONLY peer
+                        WHERE blacklist.until < time::now()
+                        GROUP ALL LIMIT 1
+                    ).count ?? 0 as b1_allowed_peers,
+                    (
+                        SELECT VALUE count()
+                        FROM ONLY peer
+                        WHERE blacklist.until >= time::now()
+                        GROUP ALL LIMIT 1
+                    ).count ?? 0 as b1_blacklisted_peers
+                FROM peer
+                GROUP ALL;
         "#,
     )
     .await?;
