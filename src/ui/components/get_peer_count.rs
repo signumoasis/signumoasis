@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     common::{dashboard_stream, models::DashboardData},
-    ui::shleep,
+    ui::wasm_sleep,
 };
 
 #[component]
@@ -17,7 +17,7 @@ pub fn GetPeerCount() -> Element {
     //})?;
     use_future(move || async move {
         loop {
-            tracing::debug!("Connecting to dashboard");
+            tracing::debug!("Dashboard connecting to server");
             // INFO: Loop forever to auto-reconnect if it dies
             if let Ok(stream) = dashboard_stream().await {
                 let mut stream = stream.into_inner();
@@ -26,7 +26,7 @@ pub fn GetPeerCount() -> Element {
                     *dashboard_data.write() = data;
                 }
             }
-            shleep(1000).await;
+            wasm_sleep(1000).await;
         }
     });
     //let mut server_count_resource = use_server_future(count_peers)?;
