@@ -1,3 +1,6 @@
+// TODO: Remove this
+#![allow(dead_code)]
+
 use std::{str::FromStr, time::Duration};
 
 use anyhow::{Context, Result};

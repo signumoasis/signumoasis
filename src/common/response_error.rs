@@ -1,4 +1,3 @@
-#![cfg(feature = "server")]
 use axum::response::IntoResponse;
 use http::StatusCode;
 

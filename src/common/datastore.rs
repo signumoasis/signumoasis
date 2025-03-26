@@ -1,6 +1,9 @@
 #![cfg(feature = "server")]
 
-use surrealdb::{engine::any::Any, Surreal};
+use anyhow::Result;
+use surrealdb::{engine::any::Any, method::Stream, Surreal};
+
+use super::models::DashboardData;
 
 #[derive(Clone, Debug)]
 pub struct Datastore {
@@ -18,5 +21,10 @@ impl Datastore {
     /// For when the Datastore class just won't do.
     pub fn get_surreal_db(&self) -> Surreal<Any> {
         self.db.clone()
+    }
+
+    pub async fn get_dashboard_stream(&self) -> Result<Stream<Vec<DashboardData>>> {
+        let response = self.db.select("dashboard").live().await?;
+        Ok(response)
     }
 }

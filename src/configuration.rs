@@ -6,7 +6,7 @@ use surrealdb::{
     Surreal,
 };
 
-use crate::{common::datastore::Datastore, protocols::b1::B1Settings};
+use crate::{common::Datastore, protocols::b1::B1Settings};
 
 #[tracing::instrument(skip_all)]
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {

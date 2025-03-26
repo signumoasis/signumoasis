@@ -1,9 +1,9 @@
 #![cfg(feature = "server")]
 use std::sync::mpsc;
 
-use axum::{extract::FromRef, Router};
+use axum::Router;
 
-use crate::{common::datastore::Datastore, configuration::Settings};
+use crate::{common::Datastore, configuration::Settings};
 
 use super::ChainMessage;
 

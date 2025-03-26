@@ -75,6 +75,7 @@ impl BasicPeerClient for B1Peer {
 
         #[derive(Debug, Deserialize)]
         #[serde(rename_all = "camelCase")]
+        #[allow(dead_code)] // TODO: Remove this
         struct NextBlocks {
             next_blocks: Vec<B1Block>,
         }

@@ -1,4 +1,3 @@
-#![cfg(feature = "server")]
 mod b1_configuration;
 mod b1_datastore;
 mod b1_peer;
@@ -9,7 +8,7 @@ pub mod peers;
 
 use std::sync::mpsc;
 
-use axum::{extract::FromRef, routing::get, Router};
+use axum::{routing::get, Router};
 pub use b1_configuration::*;
 pub use b1_datastore::*;
 pub use b1_peer::*;
@@ -18,7 +17,7 @@ use peer_finder::run_peer_finder_forever;
 use peer_info_trader::run_peer_info_trader_forever;
 
 use crate::{
-    common::datastore::Datastore,
+    common::Datastore,
     configuration::Settings,
     protocols::{report_exit, traits::Protocol, ChainMessage, PluginMessage},
 };

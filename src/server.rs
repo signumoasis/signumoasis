@@ -1,18 +1,14 @@
 #![cfg(feature = "server")]
 use std::sync::{mpsc, Arc};
 
-use axum::{
-    extract::{FromRef, State},
-    response::IntoResponse,
-    routing::get,
-};
+use axum::{extract::FromRef, response::IntoResponse, routing::get};
 use dioxus::prelude::*;
 use dioxus_fullstack::ServeConfigBuilder;
 use http::StatusCode;
 use tokio::net::TcpListener;
 
 use crate::{
-    common::datastore::Datastore,
+    common::Datastore,
     configuration::Settings,
     protocols::{b1::B1Protocol, traits::Protocol, ChainMessage},
     ui::components::App,
@@ -75,6 +71,6 @@ impl FromRef<AppState> for Datastore {
 }
 
 #[tracing::instrument(skip_all)]
-async fn health_check(State(ds): State<Datastore>) -> impl IntoResponse {
+async fn health_check() -> impl IntoResponse {
     (StatusCode::OK, "Healthy".to_owned())
 }
