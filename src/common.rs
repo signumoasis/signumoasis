@@ -34,7 +34,7 @@ pub async fn dashboard_stream() -> Result<server_fn::codec::JsonStream<Dashboard
         tracing::debug!("Result<Notification>: {:#?}", &n);
         match n {
             Ok(notification) => {
-                tracing::debug!("Notification: {:#?}", &notification);
+                tracing::trace!("Notification: {:#?}", &notification);
                 let result = notification.data;
                 tracing::debug!("Notification value: {:#?}", &result);
                 Ok(result)

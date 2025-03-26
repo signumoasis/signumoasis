@@ -23,8 +23,10 @@ impl Datastore {
         self.db.clone()
     }
 
+    #[tracing::instrument(skip_all)]
     pub async fn get_dashboard_stream(&self) -> Result<Stream<Vec<DashboardData>>> {
         let response = self.db.select("dashboard").live().await?;
+        tracing::trace!("Live Selected: {:#?}", &response);
         Ok(response)
     }
 }
