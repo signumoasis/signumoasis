@@ -9,11 +9,11 @@ pub mod peers;
 
 use std::sync::mpsc;
 
-use axum::{routing::get, Router};
+use axum::Router;
 pub use b1_configuration::*;
 pub use b1_datastore::*;
 pub use b1_peer::*;
-use p2p_api::SrsApiApplication;
+use p2p_api::B1ApiApplication;
 //use client_api::{client_api_handler, get_peers};
 use peer_finder::run_peer_finder_forever;
 use peer_info_trader::run_peer_info_trader_forever;
@@ -46,7 +46,7 @@ impl Protocol for B1Protocol {
 
         // Create the p2p api webserver task
         let p2p_api =
-            SrsApiApplication::build(self.settings.clone(), self.datastore.clone()).await?;
+            B1ApiApplication::build(self.settings.clone(), self.datastore.clone()).await?;
         let p2p_api_task = tokio::spawn(p2p_api.run_until_stopped());
 
         // Create the peer finder task

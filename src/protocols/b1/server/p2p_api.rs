@@ -6,5 +6,5 @@ mod application;
 //mod peers;
 mod signum_api_handler;
 
-pub use application::SrsApiApplication;
+pub use application::B1ApiApplication;
 pub use signum_api_handler::*;

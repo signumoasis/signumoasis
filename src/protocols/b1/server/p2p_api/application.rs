@@ -7,12 +7,12 @@ use super::signum_api_handler;
 
 pub type AppServer = Serve<IntoMakeService<Router>, Router>;
 
-pub struct SrsApiApplication {
+pub struct B1ApiApplication {
     port: u16,
     server: AppServer,
 }
 
-impl SrsApiApplication {
+impl B1ApiApplication {
     pub async fn build(
         configuration: B1Settings,
         database: B1Datastore,
