@@ -1,27 +1,25 @@
 use anyhow::Context;
 use serde::Serialize;
 
+use crate::protocols::b1::B1Settings;
+
 //use crate::configuration::PeerToPeerSettings;
 
 pub struct OutgoingJsonBuiler {
     protocol: String,
-    //settings: PeerToPeerSettings,
+    settings: B1Settings,
 }
 
 impl OutgoingJsonBuiler {
-    pub fn new(//settings: &PeerToPeerSettings
-    ) -> Self {
+    pub fn new(settings: &B1Settings) -> Self {
         Self {
             protocol: "B1".to_string(),
-            //settings: settings.clone(),
+            settings: settings.clone(),
         }
     }
 
     pub fn get_info(&self) -> OutgoingGetInfoRequest {
-        OutgoingGetInfoRequest::new(
-            self.protocol.clone(),
-            //&self.settings
-        )
+        OutgoingGetInfoRequest::new(self.protocol.clone(), &self.settings)
     }
 }
 
@@ -41,23 +39,16 @@ pub struct OutgoingGetInfoRequest {
 impl OutgoingRequest for OutgoingGetInfoRequest {}
 
 impl OutgoingGetInfoRequest {
-    pub(crate) fn new(
-        protocol: String,
-        //settings: &PeerToPeerSettings
-    ) -> Self {
+    pub(crate) fn new(protocol: String, settings: &B1Settings) -> Self {
         Self {
             protocol,
             request_type: "getInfo".to_owned(),
-            announced_address: "nodomain.com".to_owned(),
-            //announced_address: settings.my_address.clone(),
+            announced_address: settings.my_address.clone(),
             application: "SignumOasis".to_owned(),
             version: "0.1.0".to_owned(),
-            platform: "".to_owned(),
-            share_address: false,
-            network_name: "Signum".to_owned(),
-            //platform: settings.platform.clone(),
-            //share_address: settings.share_address,
-            //network_name: settings.network_name.clone(),
+            platform: settings.platform.clone(),
+            share_address: settings.share_address,
+            network_name: settings.network_name.clone(),
         }
     }
 }
