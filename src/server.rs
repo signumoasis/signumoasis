@@ -21,12 +21,13 @@ pub async fn run(settings: Settings) -> anyhow::Result<()> {
 
     let axum_app_state = AppState {
         datastore: db.clone(),
+        settings: settings.clone(),
     };
 
     // TODO: Replace this mess with `.context()` when released in future:
     // https://github.com/DioxusLabs/dioxus/pull/3483
     let dioxus_server_app_state = Arc::new(vec![Box::new({
-        let local_state = axum_app_state.datastore.clone();
+        let local_state = axum_app_state.clone();
         move || Box::new(local_state.clone()) as Box<dyn std::any::Any>
     })
         as Box<dyn Fn() -> Box<dyn std::any::Any> + Send + Sync + 'static>]);
@@ -62,11 +63,18 @@ pub async fn run(settings: Settings) -> anyhow::Result<()> {
 #[derive(Clone, Debug)]
 pub struct AppState {
     pub datastore: Datastore,
+    pub settings: Settings,
 }
 
 impl FromRef<AppState> for Datastore {
     fn from_ref(input: &AppState) -> Self {
         input.datastore.clone()
+    }
+}
+
+impl FromRef<AppState> for Settings {
+    fn from_ref(input: &AppState) -> Self {
+        input.settings.clone()
     }
 }
 

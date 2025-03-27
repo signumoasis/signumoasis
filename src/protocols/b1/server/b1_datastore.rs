@@ -9,7 +9,7 @@ use surrealdb::{
 
 use crate::{
     common::{models::PeerAddress, Datastore},
-    protocols::b1::models::PeerInfo,
+    protocols::b1::models::{ExchangeablePeerInfo, FullPeerInfo},
 };
 
 #[derive(Clone, Debug)]
@@ -62,6 +62,26 @@ impl B1Datastore {
         ))?;
 
         Ok(response)
+    }
+
+    #[tracing::instrument(skip(self))]
+    pub async fn client_api_all_peers(&self) -> Result<Vec<String>, DatastoreError> {
+        let mut response = self
+            .db
+            .query(
+                r#"
+                    SELECT VALUE ip_address FROM b1_peer
+                    WHERE ip_address != NULL && ip_address != NONE
+                "#,
+            )
+            .await
+            .context("unable to get peers")
+            .map_err(DatastoreError::UnexpectedError)?;
+        let peers = response
+            .take::<Vec<String>>(0)
+            .context("unable to convert response to peer list")
+            .map_err(DatastoreError::UnexpectedError)?;
+        Ok(peers)
     }
 
     /// Adds a new peer to the database.
@@ -213,23 +233,32 @@ impl B1Datastore {
         Ok(response)
     }
 
-    pub async fn peer_count(&self) -> Result<u32> {
+    #[tracing::instrument(skip(self))]
+    pub async fn all_peers(&self) -> Result<Vec<FullPeerInfo>, DatastoreError> {
+        let response: Vec<FullPeerInfo> = self
+            .db
+            .select("b1_peer")
+            .await
+            .context("unable to get b1 peers")?;
+        Ok(response)
+    }
+
+    #[tracing::instrument(skip(self))]
+    pub async fn peer_count(&self) -> Result<u32, DatastoreError> {
         let mut response = self
             .db
             .query(
                 r#"
-                    -- SELECT count() as count FROM b1_peer GROUP ALL
-                    -- SELECT VALUE {count: b1.total_peers} FROM dashboard;
-                    -- SELECT b1.total_peers FROM dashboard;
                     SELECT b1_total_peers FROM dashboard;
                 "#,
             )
             .await
             .context("count not get peer count")?;
         let count = response
-            .take::<Option<u32>>("count")
-            .context("query finished but coudn't take peer count")?
-            .ok_or_else(|| anyhow::anyhow!("couldn't convert option to result"))?;
+            .take::<Option<u32>>("b1_total_peers")
+            .context("query finished but coudn't take peer count")?;
+        tracing::debug!("count is: {:#?}", &count);
+        let count = count.ok_or_else(|| anyhow::anyhow!("couldn't convert option to result"))?;
         Ok(count)
     }
 
@@ -238,7 +267,7 @@ impl B1Datastore {
         &self,
         peer_address: PeerAddress,
         new_ip_address: String,
-        peer_info: PeerInfo,
+        peer_info: ExchangeablePeerInfo,
     ) -> Result<Response, DatastoreError> {
         let response = self
             .db
@@ -253,7 +282,7 @@ impl B1Datastore {
                             version: $version,
                             platform: $platform,
                             share_address: $share_address,
-                            network: $network,
+                            network_name: $network_name,
                             last_seen: time::now(),
                             attempts_since_last_seen: 0
                         }
@@ -267,7 +296,7 @@ impl B1Datastore {
             .bind(("version", peer_info.version))
             .bind(("platform", peer_info.platform))
             .bind(("share_address", peer_info.share_address))
-            .bind(("network", peer_info.network_name));
+            .bind(("network_name", peer_info.network_name));
 
         let response = response
             .query(CommitStatement::default())

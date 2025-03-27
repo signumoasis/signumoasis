@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 
 use crate::{
     common::models::PeerAddress,
-    protocols::b1::models::{B1Block, PeerInfo},
+    protocols::b1::models::{B1Block, ExchangeablePeerInfo},
 };
 
 use super::peers::{BasicPeerClient, DownloadResult, PeerCommunicationError};
@@ -160,7 +160,9 @@ impl BasicPeerClient for B1Peer {
         Ok(out)
     }
 
-    async fn get_peer_info(&self) -> Result<(PeerInfo, String), PeerCommunicationError> {
+    async fn get_peer_info(
+        &self,
+    ) -> Result<(ExchangeablePeerInfo, String), PeerCommunicationError> {
         todo!()
     }
 }

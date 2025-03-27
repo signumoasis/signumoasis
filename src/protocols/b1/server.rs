@@ -1,7 +1,8 @@
 mod b1_configuration;
 mod b1_datastore;
 mod b1_peer;
-pub mod client_api;
+//pub mod client_api;
+pub mod p2p_api;
 pub mod peer_finder;
 pub mod peer_info_trader;
 pub mod peers;
@@ -12,7 +13,7 @@ use axum::{routing::get, Router};
 pub use b1_configuration::*;
 pub use b1_datastore::*;
 pub use b1_peer::*;
-use client_api::get_peer_count;
+//use client_api::{client_api_handler, get_peers};
 use peer_finder::run_peer_finder_forever;
 use peer_info_trader::run_peer_info_trader_forever;
 
@@ -21,6 +22,8 @@ use crate::{
     configuration::Settings,
     protocols::{report_exit, traits::Protocol, ChainMessage, PluginMessage},
 };
+
+const BRS_VERSION: &str = "3.8.4";
 
 pub struct B1Protocol {
     datastore: B1Datastore,
@@ -83,7 +86,12 @@ impl Protocol for B1Protocol {
 
     fn register_routes(&self, router: Router) -> Router {
         let b1router = Router::new()
-            .route("/peer_count", get(get_peer_count))
+            // TODO: Client API should not exist here. If we want to emulate the BRS client API
+            // as well as the Oasis API, it should exist in a BRS module outside of the B1 protocol
+            // as the protocols are only for sending p2p data...
+            // TODO: The routes here should be main-port mirrors of the B1 p2p port API routes
+            // to prepare for hopeful upcoming changes to the routing of the signum BRS node's APIs.
+            //.route("/", get(client_api_handler))
             .with_state(self.datastore.clone());
         router.nest("/api/b1", b1router)
     }

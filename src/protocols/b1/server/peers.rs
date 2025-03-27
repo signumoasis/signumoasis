@@ -10,10 +10,10 @@ use serde_json::{json, Value};
 
 use crate::{
     common::models::PeerAddress,
-    protocols::b1::models::{B1Block, PeerInfo},
+    protocols::b1::models::{B1Block, ExchangeablePeerInfo},
 };
 
-use super::B1Datastore;
+use super::{B1Datastore, BRS_VERSION};
 
 // TODO: Move this to models or something
 /// A downloaded set of blocks.
@@ -41,7 +41,8 @@ pub trait BasicPeerClient {
     ) -> Result<DownloadResult, PeerCommunicationError>;
     async fn get_peers(&self) -> Result<Vec<PeerAddress>, anyhow::Error>;
     async fn get_peer_cumulative_difficulty(&self) -> Result<BigUint>;
-    async fn get_peer_info(&self) -> Result<(PeerInfo, String), PeerCommunicationError>;
+    async fn get_peer_info(&self)
+        -> Result<(ExchangeablePeerInfo, String), PeerCommunicationError>;
 }
 
 /// Makes an http request to the supplied peer address and parses the returned information
@@ -50,22 +51,23 @@ pub trait BasicPeerClient {
 /// Returns a tuple of ([`PeerInfo`], [`String`]) where the string is the resolved IP
 /// address of the peer.
 #[tracing::instrument]
-async fn get_peer_info(peer: &PeerAddress) -> Result<(PeerInfo, String), PeerCommunicationError> {
+async fn get_peer_info(
+    peer: &PeerAddress,
+) -> Result<(ExchangeablePeerInfo, String), PeerCommunicationError> {
     let thebody = json!({
         "protocol": "B1",
         "requestType": "getInfo",
         "announcedAddress": "nodomain.com",
         "application": "BRS",
-        "version": "3.8.0",
+        "version": BRS_VERSION,
         "platform": "signum-rs",
         "shareAddress": "false",
     });
 
-    //let response = post_peer_request(&thebody, None).await;
     let client = reqwest::Client::new()
         .post(peer.to_url())
         .timeout(Duration::from_secs(2))
-        .header("User-Agent", "BRS/3.8.2")
+        .header("User-Agent", format!("BRS/{}", BRS_VERSION))
         .json(&thebody);
 
     let response = client.send().await;
@@ -87,7 +89,7 @@ async fn get_peer_info(peer: &PeerAddress) -> Result<(PeerInfo, String), PeerCom
 
     tracing::trace!("found ip address {} for PeerAddress {}", &peer_ip, peer);
 
-    let mut peer_info = match response.json::<PeerInfo>().await {
+    let mut peer_info = match response.json::<ExchangeablePeerInfo>().await {
         Ok(i) => Ok(i),
         Err(e) if e.is_decode() => Err(PeerCommunicationError::ContentDecodeError(e)),
         Err(e) => Err(PeerCommunicationError::UnexpectedError(

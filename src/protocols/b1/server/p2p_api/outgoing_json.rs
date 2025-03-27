@@ -1,24 +1,27 @@
-use actix_web::ResponseError;
 use anyhow::Context;
 use serde::Serialize;
 
-use crate::configuration::PeerToPeerSettings;
+//use crate::configuration::PeerToPeerSettings;
 
 pub struct OutgoingJsonBuiler {
     protocol: String,
-    settings: PeerToPeerSettings,
+    //settings: PeerToPeerSettings,
 }
 
 impl OutgoingJsonBuiler {
-    pub fn new(settings: &PeerToPeerSettings) -> Self {
+    pub fn new(//settings: &PeerToPeerSettings
+    ) -> Self {
         Self {
             protocol: "B1".to_string(),
-            settings: settings.clone(),
+            //settings: settings.clone(),
         }
     }
 
     pub fn get_info(&self) -> OutgoingGetInfoRequest {
-        OutgoingGetInfoRequest::new(self.protocol.clone(), &self.settings)
+        OutgoingGetInfoRequest::new(
+            self.protocol.clone(),
+            //&self.settings
+        )
     }
 }
 
@@ -38,16 +41,23 @@ pub struct OutgoingGetInfoRequest {
 impl OutgoingRequest for OutgoingGetInfoRequest {}
 
 impl OutgoingGetInfoRequest {
-    pub(crate) fn new(protocol: String, settings: &PeerToPeerSettings) -> Self {
+    pub(crate) fn new(
+        protocol: String,
+        //settings: &PeerToPeerSettings
+    ) -> Self {
         Self {
             protocol,
-            request_type: "getInfo".to_string(),
-            announced_address: settings.my_address.clone(),
-            application: "SignumRust".to_string(),
-            version: "0.1.0".to_string(),
-            platform: settings.platform.clone(),
-            share_address: settings.share_address,
-            network_name: settings.network_name.clone(),
+            request_type: "getInfo".to_owned(),
+            announced_address: "nodomain.com".to_owned(),
+            //announced_address: settings.my_address.clone(),
+            application: "SignumOasis".to_owned(),
+            version: "0.1.0".to_owned(),
+            platform: "".to_owned(),
+            share_address: false,
+            network_name: "Signum".to_owned(),
+            //platform: settings.platform.clone(),
+            //share_address: settings.share_address,
+            //network_name: settings.network_name.clone(),
         }
     }
 }
@@ -64,7 +74,7 @@ pub enum OutgoingRequestError {
     UnexpectedError(#[from] anyhow::Error),
 }
 
-impl ResponseError for OutgoingRequestError {}
+//impl ResponseError for OutgoingRequestError {}
 
 impl std::fmt::Debug for OutgoingRequestError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

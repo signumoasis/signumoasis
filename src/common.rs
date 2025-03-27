@@ -1,25 +1,21 @@
-use dioxus::prelude::*;
-
 mod datastore;
-pub mod models;
 
 #[cfg(feature = "server")]
 mod response_error;
-
-use futures::StreamExt;
-use models::DashboardData;
-#[cfg(feature = "server")]
-pub use response_error::ResponseError;
-
 #[cfg(feature = "server")]
 pub use datastore::Datastore;
+#[cfg(feature = "server")]
+pub use response_error::ResponseError;
+pub mod models;
+
+use dioxus::prelude::*;
+use futures::StreamExt;
+use models::DashboardData;
 
 #[server(endpoint = "dashboard", output = server_fn::codec::StreamingJson)]
 #[tracing::instrument(skip_all)]
 pub async fn dashboard_stream() -> Result<server_fn::codec::JsonStream<DashboardData>, ServerFnError>
 {
-    use crate::common::Datastore;
-
     tracing::trace!("Trying to get datastore from dioxus");
     let FromContext::<Datastore>(datastore) = extract().await?;
 
@@ -46,4 +42,15 @@ pub async fn dashboard_stream() -> Result<server_fn::codec::JsonStream<Dashboard
         }
     }));
     Ok(stream)
+}
+
+#[server(endpoint = "peer_list")]
+#[tracing::instrument(skip_all)]
+pub async fn peers_list() -> Result<Vec<String>, ServerFnError> {
+    tracing::trace!("Trying to get datastore from dioxus");
+    let FromContext::<Datastore>(datastore) = extract().await?;
+
+    let peer_list = Vec::<String>::new();
+
+    todo!()
 }
