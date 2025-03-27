@@ -14,7 +14,7 @@ use crate::{
     ui::components::App,
 };
 
-#[tracing::instrument(skip_all)]
+#[tracing::instrument(name = "Main Server", skip_all)]
 pub async fn run(settings: Settings) -> anyhow::Result<()> {
     tracing::info!("Connecting to database");
     let db = settings.database.get_db().await?;

@@ -35,9 +35,9 @@ impl B1ApiApplication {
         self.port
     }
 
-    #[tracing::instrument(skip_all)]
+    #[tracing::instrument(name = "B1 API Server Runner", skip_all)]
     pub async fn run_until_stopped(self) -> Result<(), std::io::Error> {
-        tracing::info!("Starting SRS API Application");
+        tracing::info!("Starting B1 API Application");
         self.server.await
     }
 }

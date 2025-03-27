@@ -33,7 +33,7 @@ pub struct B1Protocol {
 }
 
 impl Protocol for B1Protocol {
-    #[tracing::instrument(skip_all)]
+    #[tracing::instrument(name = "B1Protocol", skip_all)]
     async fn run(&self) -> Result<(), anyhow::Error> {
         tracing::info!("Starting B1 Protocol");
         let (_from_chain_tx, _from_chain_rx) = mpsc::channel::<PluginMessage>();
