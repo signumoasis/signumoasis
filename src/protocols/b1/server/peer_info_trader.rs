@@ -11,7 +11,7 @@ use crate::protocols::b1::{
 
 use super::B1Datastore;
 
-#[tracing::instrument(skip_all)]
+#[tracing::instrument(name = "Peer Info Trader Runner", skip_all)]
 pub async fn run_peer_info_trader_forever(database: B1Datastore) -> Result<()> {
     tracing::info!("Starting peer info trader task");
     loop {
