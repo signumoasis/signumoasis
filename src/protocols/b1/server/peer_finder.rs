@@ -47,7 +47,6 @@ pub async fn peer_finder(mut database: B1Datastore, settings: B1Settings) -> Res
         // Try address from bootstrap
         //TODO: Make this a random selection instead of just taking the first one.
         let peer = settings
-            .p2p
             .bootstrap_peers
             .first()
             .ok_or_else(|| anyhow::anyhow!("Unable to get peer"))?;

@@ -9,20 +9,6 @@ pub struct B1Settings {
     pub base_url: String,
     pub listen_address: String,
     pub listen_port: u16,
-    pub p2p: PeerToPeerSettings,
-}
-
-impl B1Settings {
-    pub(crate) fn set_defaults(
-        builder: ConfigBuilder<DefaultState>,
-    ) -> Result<ConfigBuilder<DefaultState>, ConfigError> {
-        PeerToPeerSettings::set_defaults(builder)
-    }
-}
-
-/// Peer to Peer settings.
-#[derive(Clone, Debug, Deserialize)]
-pub struct PeerToPeerSettings {
     /// Peer addresses to use if none are in the database already.
     pub bootstrap_peers: Vec<PeerAddress>,
     /// Address that peers should attempt to connect to.
@@ -37,13 +23,14 @@ pub struct PeerToPeerSettings {
     pub snr_reward_address: String,
 }
 
-impl PeerToPeerSettings {
-    /// Set defaults for the [`PeerToPeerSettings`].
-    fn set_defaults(
+impl B1Settings {
+    /// Set defaults for the [`B1Settings`].
+    pub fn set_defaults(
         builder: ConfigBuilder<DefaultState>,
     ) -> Result<ConfigBuilder<DefaultState>, ConfigError> {
         builder
-            .set_default("b1protocol.p2p.bootstrap_peers", {
+            .set_default("b1protocol.listen_port", "8123")?
+            .set_default("b1protocol.bootstrap_peers", {
                 vec![
                     "australia.signum.network:8123",
                     "brazil.signum.network:8123",
@@ -60,10 +47,10 @@ impl PeerToPeerSettings {
                 ]
             })?
             //TODO: Figure out a way to get external IP and populate it
-            .set_default("b1protocol.p2p.my_address", String::new())?
-            .set_default("b1protocol.p2p.platform", String::new())?
-            .set_default("b1protocol.p2p.share_address", true)?
-            .set_default("b1protocol.p2p.network_name", "Signum".to_string())?
-            .set_default("b1protocol.p2p.snr_reward_address", String::new())
+            .set_default("b1protocol.my_address", String::new())?
+            .set_default("b1protocol.platform", String::new())?
+            .set_default("b1protocol.share_address", true)?
+            .set_default("b1protocol.network_name", "Signum".to_string())?
+            .set_default("b1protocol.snr_reward_address", String::new())
     }
 }

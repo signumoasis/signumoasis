@@ -1,7 +1,7 @@
 use axum::{routing::IntoMakeService, serve::Serve, Router};
 use tokio::net::TcpListener;
 
-use crate::protocols::b1::{server::PeerToPeerSettings, B1Datastore, B1Settings};
+use crate::protocols::b1::{B1Datastore, B1Settings};
 
 use super::signum_api_handler;
 
@@ -19,19 +19,14 @@ impl SrsApiApplication {
     ) -> Result<Self, anyhow::Error> {
         let address = format!(
             "{}:{}",
-            configuration.listen_address, configuration.listen_port
+            configuration.listen_address.clone(),
+            configuration.listen_port.clone()
         );
 
         let listener = TcpListener::bind(address).await?;
         let port = listener.local_addr().unwrap().port();
 
-        let server = run(
-            listener,
-            database,
-            configuration.base_url,
-            configuration.p2p.clone(),
-        )
-        .await?;
+        let server = run(listener, database, configuration.clone()).await?;
 
         Ok(Self { port, server })
     }
@@ -56,8 +51,7 @@ pub struct ApplicationBaseUrl(pub String);
 async fn run(
     listener: TcpListener,
     db: B1Datastore,
-    base_url: String,
-    p2p_settings: PeerToPeerSettings,
+    settings: B1Settings,
 ) -> Result<AppServer, anyhow::Error> {
     let app = Router::new().route("/", axum::routing::get(|| async { "Hello, World!" }));
 
