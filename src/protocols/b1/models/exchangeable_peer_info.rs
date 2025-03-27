@@ -6,9 +6,9 @@ use crate::common::models::PeerAddress;
 #[serde(rename_all = "camelCase")]
 pub struct ExchangeablePeerInfo {
     pub announced_address: Option<PeerAddress>,
-    pub application: Option<String>,
-    pub version: Option<String>,
+    pub application: String,
+    pub version: String,
     pub platform: Option<String>,
-    pub share_address: Option<bool>,
-    pub network_name: Option<String>,
+    pub share_address: bool,
+    pub network_name: String,
 }
