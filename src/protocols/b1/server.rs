@@ -13,6 +13,7 @@ use axum::{routing::get, Router};
 pub use b1_configuration::*;
 pub use b1_datastore::*;
 pub use b1_peer::*;
+use p2p_api::SrsApiApplication;
 //use client_api::{client_api_handler, get_peers};
 use peer_finder::run_peer_finder_forever;
 use peer_info_trader::run_peer_info_trader_forever;
@@ -33,7 +34,7 @@ pub struct B1Protocol {
 
 impl Protocol for B1Protocol {
     #[tracing::instrument(skip_all)]
-    async fn run(&self) {
+    async fn run(&self) -> Result<(), anyhow::Error> {
         tracing::info!("Starting B1 Protocol");
         let (_from_chain_tx, _from_chain_rx) = mpsc::channel::<PluginMessage>();
 
@@ -44,8 +45,9 @@ impl Protocol for B1Protocol {
         //));
 
         // Create the p2p api webserver task
-        //let p2p_api = SrsApiApplication::build(configuration.clone(), database.clone()).await?;
-        //let p2p_api_task = tokio::spawn(p2p_api.run_until_stopped());
+        let p2p_api =
+            SrsApiApplication::build(self.settings.clone(), self.datastore.clone()).await?;
+        let p2p_api_task = tokio::spawn(p2p_api.run_until_stopped());
 
         // Create the peer finder task
         let peer_finder_task = tokio::spawn(run_peer_finder_forever(
@@ -60,10 +62,11 @@ impl Protocol for B1Protocol {
         // Select on all the tasks to report closure status
         tokio::select! {
             //o = block_downloader_task=> report_exit("Block Downloader", o),
-            //o = p2p_api_task => report_exit("P2P API Server", o),
+            o = p2p_api_task => report_exit("P2P API Server", o),
             o = peer_finder_task => report_exit("Peer Finder", o),
             o = peer_info_trader_task => report_exit("Peer Info Trader", o),
         };
+        Ok(())
     }
 
     fn initialize(

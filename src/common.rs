@@ -1,7 +1,8 @@
+#[cfg(feature = "server")]
 mod datastore;
-
 #[cfg(feature = "server")]
 mod response_error;
+
 #[cfg(feature = "server")]
 pub use datastore::Datastore;
 #[cfg(feature = "server")]

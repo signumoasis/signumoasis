@@ -9,7 +9,7 @@ use super::ChainMessage;
 
 #[allow(async_fn_in_trait)]
 pub trait Protocol {
-    async fn run(&self);
+    async fn run(&self) -> Result<(), anyhow::Error>;
     fn initialize(
         datastore: Datastore,
         settings: Settings,

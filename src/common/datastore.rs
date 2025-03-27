@@ -1,5 +1,3 @@
-#![cfg(feature = "server")]
-
 use anyhow::Result;
 use surrealdb::{engine::any::Any, method::Stream, Surreal};
 

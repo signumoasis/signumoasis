@@ -26,8 +26,18 @@ pub async fn run(settings: Settings) -> anyhow::Result<()> {
 
     // TODO: Replace this mess with `.context()` when released in future:
     // https://github.com/DioxusLabs/dioxus/pull/3483
-    let dioxus_server_app_state = Arc::new(vec![Box::new({
-        let local_state = axum_app_state.clone();
+    // Datastore context
+    let dioxus_server_app_state_datastore = Arc::new(vec![Box::new({
+        let local_state = axum_app_state.datastore.clone();
+        move || Box::new(local_state.clone()) as Box<dyn std::any::Any>
+    })
+        as Box<dyn Fn() -> Box<dyn std::any::Any> + Send + Sync + 'static>]);
+
+    // TODO: Replace this mess with `.context()` when released in future:
+    // https://github.com/DioxusLabs/dioxus/pull/3483
+    // Settings context
+    let dioxus_server_app_state_settings = Arc::new(vec![Box::new({
+        let local_state = axum_app_state.settings.clone();
         move || Box::new(local_state.clone()) as Box<dyn std::any::Any>
     })
         as Box<dyn Fn() -> Box<dyn std::any::Any> + Send + Sync + 'static>]);
@@ -37,7 +47,9 @@ pub async fn run(settings: Settings) -> anyhow::Result<()> {
 
     tracing::info!("Launching web and API server");
     let app = axum::Router::new().serve_dioxus_application(
-        ServeConfigBuilder::new().context_providers(server_only!(dioxus_server_app_state)),
+        ServeConfigBuilder::new()
+            .context_providers(server_only!(dioxus_server_app_state_settings))
+            .context_providers(server_only!(dioxus_server_app_state_datastore)),
         App,
     );
 
