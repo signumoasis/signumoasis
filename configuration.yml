@@ -5,13 +5,11 @@ node:
   network: "Signum"
 b1protocol:
   # Settings that apply to general Peer to Peer work
-  p2p:
-    snr_reward_address: S-C9TD-24WW-RUD3-FGHVJ
-    my_address: "rustdevnode.signumoasis.xyz:80"
-    # bootstrap_peers:
-    #   - "p2p.signumoasis.xyz:80"
-    #   - "us-east.signum.network"
-  # Settings for the Signum SRS client API
-  base_url: http://localhost:8000
+  base_url: http://localhost:8123
   listen_address: "0.0.0.0"
-  listen_port: 8000
+  listen_port: 8123
+  my_address: "rustdevnode.signumoasis.xyz:80"
+  snr_reward_address: S-C9TD-24WW-RUD3-FGHVJ
+  # bootstrap_peers:
+  #   - "p2p.signumoasis.xyz:80"
+  #   - "us-east.signum.network"
