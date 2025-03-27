@@ -11,7 +11,6 @@ use crate::protocols::b1::{
 
 use super::{B1Datastore, B1Settings};
 
-#[tracing::instrument(name = "Peer Finder Runner", skip_all)]
 pub async fn run_peer_finder_forever(database: B1Datastore, settings: B1Settings) -> Result<()> {
     tracing::info!("Starting Peer Finder");
     loop {
