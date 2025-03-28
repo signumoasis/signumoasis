@@ -244,6 +244,26 @@ impl B1Datastore {
     }
 
     #[tracing::instrument(skip(self))]
+    pub async fn p2p_api_all_peers(&self) -> Result<Vec<String>, DatastoreError> {
+        let mut response = self
+            .db
+            .query(
+                r#"
+                    SELECT VALUE announced_address FROM b1_peer
+                    WHERE announced_address != NULL && announced_address != NONE
+                "#,
+            )
+            .await
+            .context("unable to get peers")
+            .map_err(DatastoreError::UnexpectedError)?;
+        let peers = response
+            .take::<Vec<String>>(0)
+            .context("unable to convert response to peer list")
+            .map_err(DatastoreError::UnexpectedError)?;
+        Ok(peers)
+    }
+
+    #[tracing::instrument(skip(self))]
     pub async fn peer_count(&self) -> Result<u32, DatastoreError> {
         let mut response = self
             .db

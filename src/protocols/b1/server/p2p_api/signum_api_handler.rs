@@ -54,7 +54,7 @@ pub async fn get_peers(datastore: B1Datastore) -> Result<Value, SignumApiError> 
     }
 
     let all_peers = datastore
-        .client_api_all_peers()
+        .p2p_api_all_peers()
         .await
         .context("unable to get all peers from database")
         .map_err(SignumApiError::UnexpectedError)?;
