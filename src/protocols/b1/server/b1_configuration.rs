@@ -6,8 +6,12 @@ use crate::common::models::PeerAddress;
 /// Settings for the signum-style API.
 #[derive(Clone, Debug, Deserialize)]
 pub struct B1Settings {
+    ///The base url for the B1 protocol - set to your domain name or to 'localhost'
     pub base_url: String,
+    /// The IP address this the B1 protocol should listen on - 0.0.0.0 for everything, 127.0.0.1 for localhost
+    /// or a specific IP address if you desire a specific network adapter
     pub listen_address: String,
+    /// The port on which the B1 protocol should listen
     pub listen_port: u16,
     /// Peer addresses to use if none are in the database already.
     pub bootstrap_peers: Vec<PeerAddress>,
