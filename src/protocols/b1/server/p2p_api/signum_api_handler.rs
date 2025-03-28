@@ -1,7 +1,10 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use axum::{extract::State, response::IntoResponse, Json};
+use http::StatusCode;
+use num_bigint::{BigInt, BigUint};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use serde_with::serde_as;
 use surrealdb::syn::parse;
 
 use crate::{
@@ -20,46 +23,29 @@ pub async fn signum_api_handler(
     State(datastore): State<B1Datastore>,
     State(settings): State<B1Settings>,
     Json(request_object): Json<RequestType>,
-) -> Result<impl IntoResponse, ResponseError> {
+) -> Result<impl IntoResponse, SignumApiError> {
     tracing::debug!("Request Object: {:#?}", &request_object);
     let _settings = settings;
 
-    let mut result = match request_object.clone() {
-        RequestType::AddPeers { peers } => serde_json::json!(format!("Adding peers: {:?}", peers)),
-        RequestType::GetBlocksFromHeight(payload) => {
-            serde_json::json!(format!(
-                "Getting {} blocks from height {}",
-                payload.num_blocks, payload.height
-            ))
-        }
+    let result = match request_object.clone() {
+        RequestType::AddPeers { peers } => return Err(SignumApiError::NotImplemented),
+        RequestType::GetBlocksFromHeight(payload) => return Err(SignumApiError::NotImplemented),
         RequestType::GetCumulativeDifficulty => get_cumulative_difficulty().await?,
-        RequestType::GetInfo(_payload) => serde_json::json!("Getting this node's info".to_owned()),
-        RequestType::GetMilestoneBlockIds(_ids) => {
-            serde_json::json!("Getting milestone block ids".to_owned())
-        }
-        RequestType::GetNextBlockIds(block_id) => {
-            serde_json::json!(format!("Getting next block ids starting at {:?}", block_id))
-        }
+        RequestType::GetInfo(_payload) => return Err(SignumApiError::NotImplemented),
+        RequestType::GetMilestoneBlockIds(_ids) => return Err(SignumApiError::NotImplemented),
+        RequestType::GetNextBlockIds(block_id) => return Err(SignumApiError::NotImplemented),
         RequestType::GetPeers => get_peers(datastore).await?,
-        RequestType::GetNextBlocks(payload) => {
-            serde_json::json!(format!("Getting next blocks from {}", payload.block_id))
-        }
-        RequestType::GetUnconfirmedTransactions => {
-            serde_json::json!("Getting unconfirmed transactions".to_owned())
-        }
-        RequestType::ProcessBlock => todo!(),
-        RequestType::ProcessTransactions => todo!(),
+        RequestType::GetNextBlocks(payload) => return Err(SignumApiError::NotImplemented),
+        RequestType::GetUnconfirmedTransactions => return Err(SignumApiError::NotImplemented),
+        RequestType::ProcessBlock => return Err(SignumApiError::NotImplemented),
+        RequestType::ProcessTransactions => return Err(SignumApiError::NotImplemented),
     };
-    if let Some(map) = result.as_object_mut() {
-        map.insert("requestProcessingTime".to_owned(), Value::Number(0.into()));
-    } else {
-        tracing::error!("Couldn't get result as mutable object")
-    };
+
     Ok(Json(result))
 }
 
 #[tracing::instrument(skip_all)]
-pub async fn get_peers(datastore: B1Datastore) -> Result<Value> {
+pub async fn get_peers(datastore: B1Datastore) -> Result<Value, SignumApiError> {
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(rename_all = "camelCase")]
     struct GetPeersResponse {
@@ -67,7 +53,11 @@ pub async fn get_peers(datastore: B1Datastore) -> Result<Value> {
         request_processing_time: u32,
     }
 
-    let all_peers = datastore.client_api_all_peers().await?;
+    let all_peers = datastore
+        .client_api_all_peers()
+        .await
+        .context("unable to get all peers from database")
+        .map_err(SignumApiError::UnexpectedError)?;
 
     let result = GetPeersResponse {
         peers: all_peers,
@@ -77,7 +67,44 @@ pub async fn get_peers(datastore: B1Datastore) -> Result<Value> {
     let json = serde_json::json!(result);
     Ok(json)
 }
-pub async fn get_cumulative_difficulty() -> Result<Value> {
-    let value = serde_json::json!("Cumulative difficulty here".to_owned());
-    Ok(value)
+pub async fn get_cumulative_difficulty() -> Result<Value, SignumApiError> {
+    // TODO: Pull the real cumulativeDifficulty information after the chain is working ad we have it
+    let thebignumber = BigUint::parse_bytes(b"157919834588195404057", 10)
+        .ok_or_else(|| anyhow::anyhow!("unable to parse BigUint"))?;
+
+    let _value = serde_json::json!({
+        "cumulativeDifficulty": thebignumber.to_string(),
+        "blockchainHeight": 1391505u32
+    });
+    Err(SignumApiError::NotImplemented)
+    //Ok(value)
+}
+
+#[derive(thiserror::Error)]
+pub enum SignumApiError {
+    #[error("Not implemented ")]
+    NotImplemented,
+    #[error(transparent)]
+    UnexpectedError(#[from] anyhow::Error),
+}
+
+impl std::fmt::Debug for SignumApiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        crate::error_chain_fmt(self, f)
+    }
+}
+
+impl IntoResponse for SignumApiError {
+    fn into_response(self) -> axum::response::Response {
+        let (code, message) = match self {
+            SignumApiError::NotImplemented => {
+                (StatusCode::NOT_IMPLEMENTED, "not implemented".to_string())
+            }
+            SignumApiError::UnexpectedError(error) => {
+                (StatusCode::INTERNAL_SERVER_ERROR, format!("{:?}", error))
+            }
+        };
+
+        (code, message).into_response()
+    }
 }
