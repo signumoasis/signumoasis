@@ -1,18 +1,12 @@
 use anyhow::{Context, Result};
 use axum::{extract::State, response::IntoResponse, Json};
 use http::StatusCode;
-use num_bigint::{BigInt, BigUint};
-use serde::{Deserialize, Serialize};
+use num_bigint::BigUint;
 use serde_json::Value;
-use serde_with::serde_as;
-use surrealdb::syn::parse;
 
-use crate::{
-    common::ResponseError,
-    protocols::b1::{B1Datastore, B1Settings},
-};
+use crate::protocols::b1::{server::BRS_VERSION, B1Datastore, B1Settings};
 
-use super::request_models::RequestType;
+use super::{outgoing_json::OutgoingJsonBuilder, request_models::RequestType};
 
 /// The primary handler function for requests to the BRS Client API. This function
 /// will hand off all processing to other functions and serves only as a router and
