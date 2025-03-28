@@ -19,7 +19,6 @@ pub async fn signum_api_handler(
     Json(request_object): Json<RequestType>,
 ) -> Result<impl IntoResponse, SignumApiError> {
     tracing::debug!("Request Object: {:#?}", &request_object);
-    let _settings = settings;
 
     let result = match request_object.clone() {
         RequestType::AddPeers { peers } => return Err(SignumApiError::NotImplemented),
