@@ -10,10 +10,13 @@ use serde_json::{json, Value};
 
 use crate::{
     common::models::PeerAddress,
-    protocols::b1::models::{B1Block, ExchangeablePeerInfo},
+    protocols::b1::{
+        models::{B1Block, ExchangeablePeerInfo},
+        server::p2p_api::outgoing_json::{OutgoingJsonBuilder, OutgoingRequest},
+    },
 };
 
-use super::{B1Datastore, BRS_VERSION};
+use super::{B1Datastore, B1Settings, BRS_VERSION};
 
 // TODO: Move this to models or something
 /// A downloaded set of blocks.
@@ -50,19 +53,16 @@ pub trait BasicPeerClient {
 ///
 /// Returns a tuple of ([`PeerInfo`], [`String`]) where the string is the resolved IP
 /// address of the peer.
-#[tracing::instrument]
+#[tracing::instrument(skip(settings))]
 async fn get_peer_info(
     peer: &PeerAddress,
+    settings: &B1Settings,
 ) -> Result<(ExchangeablePeerInfo, String), PeerCommunicationError> {
-    let thebody = json!({
-        "protocol": "B1",
-        "requestType": "getInfo",
-        "announcedAddress": "nodomain.com",
-        "application": "BRS",
-        "version": BRS_VERSION,
-        "platform": "signum-rs",
-        "shareAddress": "false",
-    });
+    let thebody = OutgoingJsonBuilder::new(settings)
+        .get_info()
+        .finish()
+        .context("unable to create outgoing json")
+        .map_err(PeerCommunicationError::UnexpectedError)?;
 
     let client = reqwest::Client::new()
         .post(peer.to_url())
@@ -108,8 +108,12 @@ async fn get_peer_info(
 /// Requests peer information from the supplied PeerAddress. Updates the database
 /// with the acquired information. Returns a [`anyhow::Result<()>`].
 #[tracing::instrument(name = "Update Info Task", skip_all)]
-pub async fn update_db_peer_info(database: B1Datastore, peer: PeerAddress) -> Result<()> {
-    let peer_info = get_peer_info(&peer).await;
+pub async fn update_db_peer_info(
+    database: B1Datastore,
+    settings: B1Settings,
+    peer: PeerAddress,
+) -> Result<()> {
+    let peer_info = get_peer_info(&peer, &settings).await;
     match peer_info {
         Ok(info) => {
             tracing::trace!("PeerInfo: {:?}", &info);

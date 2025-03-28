@@ -9,9 +9,12 @@ use crate::protocols::b1::{
     B1Peer,
 };
 
-use super::B1Datastore;
+use super::{B1Datastore, B1Settings};
 
-pub async fn run_peer_info_trader_forever(database: B1Datastore) -> Result<()> {
+pub async fn run_peer_info_trader_forever(
+    database: B1Datastore,
+    settings: B1Settings,
+) -> Result<()> {
     tracing::info!("Starting peer info trader task");
     loop {
         // Open the job-level span here so we also include the job_id in the error message if this result comes back Error.
@@ -20,7 +23,9 @@ pub async fn run_peer_info_trader_forever(database: B1Datastore) -> Result<()> {
             "Peer Info Trade Task",
             job_id = Uuid::new_v4().to_string()
         );
-        let result = peer_info_trader(database.clone()).instrument(span).await;
+        let result = peer_info_trader(database.clone(), &settings)
+            .instrument(span)
+            .await;
         if result.is_err() {
             tracing::error!("Error in peer info trader: {:?}", result);
         }
@@ -30,7 +35,7 @@ pub async fn run_peer_info_trader_forever(database: B1Datastore) -> Result<()> {
 /// Gets info from peer nodes and stores it.
 /// Simultaneously supplies this node's info to the peers it contacts.
 #[tracing::instrument(name = "Peer Info Trader", skip_all)]
-pub async fn peer_info_trader(database: B1Datastore) -> Result<()> {
+pub async fn peer_info_trader(database: B1Datastore, settings: &B1Settings) -> Result<()> {
     // Get all peers from the database that haven't been seen in 1 minute
     let peers = database
         .get_peers_last_seen_before(Duration::from_secs(60))
@@ -43,7 +48,10 @@ pub async fn peer_info_trader(database: B1Datastore) -> Result<()> {
         tracing::debug!("Launching update task for {}", &peer_address);
         let peer = B1Peer::new(peer_address);
         // Spawn update info task
-        tokio::spawn(update_db_peer_info(database.clone(), peer.address()).in_current_span());
+        tokio::spawn(
+            update_db_peer_info(database.clone(), settings.clone(), peer.address())
+                .in_current_span(),
+        );
     }
 
     Ok(())

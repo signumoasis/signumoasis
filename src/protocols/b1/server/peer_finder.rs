@@ -79,8 +79,12 @@ pub async fn peer_finder(mut database: B1Datastore, settings: B1Settings) -> Res
                         &peer_address
                     );
                     tokio::spawn(
-                        update_db_peer_info(database.clone(), peer.address().clone())
-                            .in_current_span(),
+                        update_db_peer_info(
+                            database.clone(),
+                            settings.clone(),
+                            peer.address().clone(),
+                        )
+                        .in_current_span(),
                     );
                     new_peers_count += 1;
                 } else {

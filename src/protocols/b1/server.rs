@@ -56,8 +56,10 @@ impl Protocol for B1Protocol {
         ));
 
         // Create the peer info trader task
-        let peer_info_trader_task =
-            tokio::spawn(run_peer_info_trader_forever(self.datastore.clone()));
+        let peer_info_trader_task = tokio::spawn(run_peer_info_trader_forever(
+            self.datastore.clone(),
+            self.settings.clone(),
+        ));
 
         // Select on all the tasks to report closure status
         tokio::select! {
