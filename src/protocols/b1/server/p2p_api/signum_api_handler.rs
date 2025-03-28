@@ -24,7 +24,7 @@ pub async fn signum_api_handler(
         RequestType::AddPeers { peers } => return Err(SignumApiError::NotImplemented),
         RequestType::GetBlocksFromHeight(payload) => return Err(SignumApiError::NotImplemented),
         RequestType::GetCumulativeDifficulty => get_cumulative_difficulty().await?,
-        RequestType::GetInfo(_payload) => return Err(SignumApiError::NotImplemented),
+        RequestType::GetInfo(_payload) => get_info(&settings).await?,
         RequestType::GetMilestoneBlockIds(_ids) => return Err(SignumApiError::NotImplemented),
         RequestType::GetNextBlockIds(block_id) => return Err(SignumApiError::NotImplemented),
         RequestType::GetPeers => get_peers(datastore).await?,
@@ -38,26 +38,29 @@ pub async fn signum_api_handler(
 }
 
 #[tracing::instrument(skip_all)]
-pub async fn get_peers(datastore: B1Datastore) -> Result<Value, SignumApiError> {
-    #[derive(Debug, Serialize, Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct GetPeersResponse {
-        peers: Vec<String>,
-        request_processing_time: u32,
-    }
+pub async fn get_info(settings: &B1Settings) -> Result<Value, SignumApiError> {
+    let response = serde_json::json!({
+        "announcedAddress": settings.my_address,
+        "application": "BRS", // Required by B1 protocol currently
+        "version": format!("v{}", BRS_VERSION),
+        "platform": settings.platform,
+        "shareAddress": settings.share_address,
+        "networkName": settings.network_name,
+    });
+    Ok(response)
+}
 
+#[tracing::instrument(skip_all)]
+pub async fn get_peers(datastore: B1Datastore) -> Result<Value, SignumApiError> {
     let all_peers = datastore
         .p2p_api_all_peers()
         .await
         .context("unable to get all peers from database")
         .map_err(SignumApiError::UnexpectedError)?;
 
-    let result = GetPeersResponse {
-        peers: all_peers,
-        request_processing_time: 0,
-    };
-    tracing::debug!("TheResult: {:#?}", &result);
-    let json = serde_json::json!(result);
+    let json = serde_json::json!({
+        "peers": all_peers
+    });
     Ok(json)
 }
 pub async fn get_cumulative_difficulty() -> Result<Value, SignumApiError> {
