@@ -1,12 +1,24 @@
+use std::str::FromStr;
+
 use anyhow::{Context, Result};
 use axum::{extract::State, response::IntoResponse, Json};
 use http::StatusCode;
 use num_bigint::BigUint;
 use serde_json::Value;
 
-use crate::protocols::b1::{server::BRS_VERSION, B1Datastore, B1Settings};
+use crate::{
+    common::models::PeerAddress,
+    protocols::b1::{
+        server::{peers::update_db_peer_info, BRS_VERSION},
+        B1Datastore, B1Settings,
+    },
+};
 
-use super::{outgoing_json::OutgoingJsonBuilder, request_models::RequestType};
+use super::request_models::{
+    GetBlocksFromHeightPayload, GetInfoPayload, GetMilestoneBlockIdsPayload,
+    GetNextBlockIdsPayload, GetNextBlocksPayload, ProcessBlockPayload, ProcessTransactionsPayload,
+    RequestType,
+};
 
 /// The primary handler function for requests to the BRS Client API. This function
 /// will hand off all processing to other functions and serves only as a router and
@@ -21,24 +33,62 @@ pub async fn signum_api_handler(
     tracing::debug!("Request Object: {:#?}", &request_object);
 
     let result = match request_object.clone() {
-        RequestType::AddPeers { peers } => return Err(SignumApiError::NotImplemented),
-        RequestType::GetBlocksFromHeight(payload) => return Err(SignumApiError::NotImplemented),
+        RequestType::AddPeers { peers } => add_peers(peers).await?,
+        RequestType::GetBlocksFromHeight(payload) => get_blocks_from_height(payload).await?,
         RequestType::GetCumulativeDifficulty => get_cumulative_difficulty().await?,
-        RequestType::GetInfo(_payload) => get_info(&settings).await?,
-        RequestType::GetMilestoneBlockIds(_ids) => return Err(SignumApiError::NotImplemented),
-        RequestType::GetNextBlockIds(block_id) => return Err(SignumApiError::NotImplemented),
+        RequestType::GetInfo(payload) => {
+            get_info(datastore.clone(), settings.clone(), payload).await?
+        }
+        RequestType::GetMilestoneBlockIds(payload) => get_milestone_block_ids(payload).await?,
+        RequestType::GetNextBlockIds(payload) => get_next_block_ids(payload).await?,
         RequestType::GetPeers => get_peers(datastore).await?,
-        RequestType::GetNextBlocks(payload) => return Err(SignumApiError::NotImplemented),
-        RequestType::GetUnconfirmedTransactions => return Err(SignumApiError::NotImplemented),
-        RequestType::ProcessBlock => return Err(SignumApiError::NotImplemented),
-        RequestType::ProcessTransactions => return Err(SignumApiError::NotImplemented),
+        RequestType::GetNextBlocks(payload) => get_next_blocks(payload).await?,
+        RequestType::GetUnconfirmedTransactions => get_unconfirmed_transactions().await?,
+        RequestType::ProcessBlock(payload) => process_block(payload).await?,
+        RequestType::ProcessTransactions(payload) => process_transactions(payload).await?,
     };
 
     Ok(Json(result))
 }
 
 #[tracing::instrument(skip_all)]
-pub async fn get_info(settings: &B1Settings) -> Result<Value, SignumApiError> {
+async fn add_peers(_peers: Vec<String>) -> Result<Value, SignumApiError> {
+    Err(SignumApiError::NotImplemented)
+}
+
+#[tracing::instrument(skip_all)]
+async fn get_blocks_from_height(
+    _payload: GetBlocksFromHeightPayload,
+) -> Result<Value, SignumApiError> {
+    Err(SignumApiError::NotImplemented)
+}
+
+#[tracing::instrument(skip_all)]
+async fn get_cumulative_difficulty() -> Result<Value, SignumApiError> {
+    // TODO: Pull the real cumulativeDifficulty information after the chain is working ad we have it
+    let thebignumber = BigUint::parse_bytes(b"157919834588195404057", 10)
+        .ok_or_else(|| anyhow::anyhow!("unable to parse BigUint"))?;
+
+    let _value = serde_json::json!({
+        "cumulativeDifficulty": thebignumber.to_string(),
+        "blockchainHeight": 1391505u32
+    });
+    Err(SignumApiError::NotImplemented)
+    //Ok(value)
+}
+
+#[tracing::instrument(skip_all)]
+async fn get_info(
+    datastore: B1Datastore,
+    settings: B1Settings,
+    payload: GetInfoPayload,
+) -> Result<Value, SignumApiError> {
+    if let Some(address) = payload.announced_address {
+        let address = PeerAddress::from_str(&address)
+            .context("unable to parse remote peer address")
+            .map_err(SignumApiError::UnexpectedError)?;
+        tokio::spawn(update_db_peer_info(datastore, settings.clone(), address));
+    }
     let response = serde_json::json!({
         "announcedAddress": settings.my_address,
         "application": "BRS", // Required by B1 protocol currently
@@ -51,7 +101,24 @@ pub async fn get_info(settings: &B1Settings) -> Result<Value, SignumApiError> {
 }
 
 #[tracing::instrument(skip_all)]
-pub async fn get_peers(datastore: B1Datastore) -> Result<Value, SignumApiError> {
+async fn get_milestone_block_ids(
+    _payload: GetMilestoneBlockIdsPayload,
+) -> Result<Value, SignumApiError> {
+    Err(SignumApiError::NotImplemented)
+}
+
+#[tracing::instrument(skip_all)]
+async fn get_next_blocks(payload: GetNextBlocksPayload) -> Result<Value, SignumApiError> {
+    Err(SignumApiError::NotImplemented)
+}
+
+#[tracing::instrument(skip_all)]
+async fn get_next_block_ids(payload: GetNextBlockIdsPayload) -> Result<Value, SignumApiError> {
+    Err(SignumApiError::NotImplemented)
+}
+
+#[tracing::instrument(skip_all)]
+async fn get_peers(datastore: B1Datastore) -> Result<Value, SignumApiError> {
     let all_peers = datastore
         .p2p_api_all_peers()
         .await
@@ -63,17 +130,20 @@ pub async fn get_peers(datastore: B1Datastore) -> Result<Value, SignumApiError> 
     });
     Ok(json)
 }
-pub async fn get_cumulative_difficulty() -> Result<Value, SignumApiError> {
-    // TODO: Pull the real cumulativeDifficulty information after the chain is working ad we have it
-    let thebignumber = BigUint::parse_bytes(b"157919834588195404057", 10)
-        .ok_or_else(|| anyhow::anyhow!("unable to parse BigUint"))?;
 
-    let _value = serde_json::json!({
-        "cumulativeDifficulty": thebignumber.to_string(),
-        "blockchainHeight": 1391505u32
-    });
+#[tracing::instrument(skip_all)]
+async fn get_unconfirmed_transactions() -> Result<Value, SignumApiError> {
     Err(SignumApiError::NotImplemented)
-    //Ok(value)
+}
+
+async fn process_block(_payload: ProcessBlockPayload) -> Result<Value, SignumApiError> {
+    Err(SignumApiError::NotImplemented)
+}
+
+async fn process_transactions(
+    _payload: ProcessTransactionsPayload,
+) -> Result<Value, SignumApiError> {
+    Err(SignumApiError::NotImplemented)
 }
 
 #[derive(thiserror::Error)]

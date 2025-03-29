@@ -19,8 +19,8 @@ pub enum RequestType {
     GetNextBlockIds(GetNextBlockIdsPayload),
     GetUnconfirmedTransactions,
     GetPeers,
-    ProcessBlock,
-    ProcessTransactions,
+    ProcessBlock(ProcessBlockPayload),
+    ProcessTransactions(ProcessTransactionsPayload),
 }
 
 #[serde_as]
@@ -68,3 +68,11 @@ pub struct GetNextBlockIdsPayload {
     #[serde_as(as = "DisplayFromStr")]
     pub block_id: u64,
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ProcessBlockPayload {}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ProcessTransactionsPayload {}
