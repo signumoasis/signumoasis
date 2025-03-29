@@ -108,12 +108,12 @@ async fn get_milestone_block_ids(
 }
 
 #[tracing::instrument(skip_all)]
-async fn get_next_blocks(payload: GetNextBlocksPayload) -> Result<Value, SignumApiError> {
+async fn get_next_blocks(_payload: GetNextBlocksPayload) -> Result<Value, SignumApiError> {
     Err(SignumApiError::NotImplemented)
 }
 
 #[tracing::instrument(skip_all)]
-async fn get_next_block_ids(payload: GetNextBlockIdsPayload) -> Result<Value, SignumApiError> {
+async fn get_next_block_ids(_payload: GetNextBlockIdsPayload) -> Result<Value, SignumApiError> {
     Err(SignumApiError::NotImplemented)
 }
 

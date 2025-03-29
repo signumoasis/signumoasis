@@ -49,9 +49,9 @@ pub async fn dashboard_stream() -> Result<server_fn::codec::JsonStream<Dashboard
 #[tracing::instrument(skip_all)]
 pub async fn peers_list() -> Result<Vec<String>, ServerFnError> {
     tracing::trace!("Trying to get datastore from dioxus");
-    let FromContext::<Datastore>(datastore) = extract().await?;
+    let FromContext::<Datastore>(_datastore) = extract().await?;
 
-    let peer_list = Vec::<String>::new();
+    let _peer_list = Vec::<String>::new();
 
     todo!()
 }

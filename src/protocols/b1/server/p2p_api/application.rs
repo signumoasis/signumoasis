@@ -5,7 +5,6 @@ use axum::{
     Router,
 };
 use http::StatusCode;
-use surrealdb::method::Health;
 use tokio::net::TcpListener;
 
 use crate::protocols::b1::{B1Datastore, B1Settings};
@@ -15,7 +14,7 @@ use super::signum_api_handler;
 pub type AppServer = Serve<IntoMakeService<Router>, Router>;
 
 pub struct B1ApiApplication {
-    port: u16,
+    _port: u16,
     server: AppServer,
 }
 
@@ -35,11 +34,14 @@ impl B1ApiApplication {
 
         let server = run(listener, database, configuration.clone()).await?;
 
-        Ok(Self { port, server })
+        Ok(Self {
+            _port: port,
+            server,
+        })
     }
 
-    pub fn port(&self) -> u16 {
-        self.port
+    pub fn _port(&self) -> u16 {
+        self._port
     }
 
     #[tracing::instrument(name = "B1 API Server Runner", skip_all)]
@@ -49,11 +51,7 @@ impl B1ApiApplication {
     }
 }
 
-// fn get_connection_pool(configuration: &DatabaseSettings) -> Result<SqlitePool, anyhow::Error> {
-//     Ok(SqlitePoolOptions::new().connect_lazy_with(configuration.get_writable_db()?))
-// }
-
-pub struct ApplicationBaseUrl(pub String);
+pub struct _ApplicationBaseUrl(pub String);
 
 async fn run(
     listener: TcpListener,
