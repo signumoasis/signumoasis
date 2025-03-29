@@ -294,7 +294,7 @@ impl B1Datastore {
             .query(BeginStatement::default())
             .query(
                 r#"
-                        UPDATE b1_peer
+                        UPSERT b1_peer
                         MERGE {
                             announced_address: $new_announced_address,
                             ip_address: $ip_address,
