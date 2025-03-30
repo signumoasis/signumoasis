@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use axum::{extract::State, response::IntoResponse, Json};
-use dioxus::document::ExtractSingleTextNodeError;
 use http::StatusCode;
 use num_bigint::BigUint;
 use serde_json::Value;
