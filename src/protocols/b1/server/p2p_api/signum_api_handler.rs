@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use axum::{extract::State, response::IntoResponse, Json};
+use dioxus::document::ExtractSingleTextNodeError;
 use http::StatusCode;
 use num_bigint::BigUint;
 use serde_json::Value;
@@ -33,7 +34,9 @@ pub async fn signum_api_handler(
     tracing::debug!("Request Object: {:#?}", &request_object);
 
     let result = match request_object.clone() {
-        RequestType::AddPeers { peers } => add_peers(peers).await?,
+        RequestType::AddPeers { peers } => {
+            add_peers(datastore.clone(), settings.clone(), peers).await?
+        }
         RequestType::GetBlocksFromHeight(payload) => get_blocks_from_height(payload).await?,
         RequestType::GetCumulativeDifficulty => get_cumulative_difficulty().await?,
         RequestType::GetInfo(payload) => {
@@ -51,9 +54,32 @@ pub async fn signum_api_handler(
     Ok(Json(result))
 }
 
-#[tracing::instrument(skip_all)]
-async fn add_peers(_peers: Vec<String>) -> Result<Value, SignumApiError> {
-    Err(SignumApiError::NotImplemented)
+#[tracing::instrument(skip(datastore, settings))]
+async fn add_peers(
+    datastore: B1Datastore,
+    settings: B1Settings,
+    peers: Vec<String>,
+) -> Result<Value, SignumApiError> {
+    let count = &peers.len();
+    tracing::info!("{} peers introduced by B1 P2P API", count);
+    for address in peers {
+        if let Ok(address) = PeerAddress::from_str(&address)
+            .context("unable to parse remote peer address")
+            .map_err(SignumApiError::UnexpectedError)
+        {
+            if peer_is_self(&settings.my_address, &address) {
+                tracing::warn!("Tried to get self as a peer. Aborted.");
+                continue;
+            };
+            tokio::spawn(update_db_peer_info(
+                datastore.clone(),
+                settings.clone(),
+                address,
+            ));
+        }
+    }
+    // INFO: This API endpoint is supposed to return an empty JSON object.
+    Ok(serde_json::json!({}))
 }
 
 #[tracing::instrument(skip_all)]
@@ -87,6 +113,11 @@ async fn get_info(
         let address = PeerAddress::from_str(&address)
             .context("unable to parse remote peer address")
             .map_err(SignumApiError::UnexpectedError)?;
+
+        if peer_is_self(&settings.my_address, &address) {
+            tracing::warn!("Tried to get self as a peer. Aborted.");
+            return Err(SignumApiError::SelfPeerForbidden);
+        };
         tokio::spawn(update_db_peer_info(datastore, settings.clone(), address));
     }
     let response = serde_json::json!({
@@ -146,10 +177,20 @@ async fn process_transactions(
     Err(SignumApiError::NotImplemented)
 }
 
+fn peer_is_self(my_address: &PeerAddress, peer_address: &PeerAddress) -> bool {
+    let loopback =
+        PeerAddress::from_str("127.0.0.1:80").expect("weird. 127.0.0.1 couldn't be parsed");
+    let localhost =
+        PeerAddress::from_str("localhost:80").expect("weird. localhost couldn't be parsed");
+    peer_address == my_address || peer_address == &loopback || peer_address == &localhost
+}
+
 #[derive(thiserror::Error)]
 pub enum SignumApiError {
-    #[error("Not implemented ")]
+    #[error("not implemented")]
     NotImplemented,
+    #[error("can not have self as a peer")]
+    SelfPeerForbidden,
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -163,9 +204,8 @@ impl std::fmt::Debug for SignumApiError {
 impl IntoResponse for SignumApiError {
     fn into_response(self) -> axum::response::Response {
         let (code, message) = match self {
-            SignumApiError::NotImplemented => {
-                (StatusCode::NOT_IMPLEMENTED, "not implemented".to_string())
-            }
+            SignumApiError::NotImplemented => (StatusCode::NOT_IMPLEMENTED, self.to_string()),
+            SignumApiError::SelfPeerForbidden => (StatusCode::FORBIDDEN, self.to_string()),
             SignumApiError::UnexpectedError(error) => {
                 (StatusCode::INTERNAL_SERVER_ERROR, format!("{:?}", error))
             }
