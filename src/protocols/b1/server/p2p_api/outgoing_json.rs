@@ -41,7 +41,7 @@ impl OutgoingGetInfoRequest {
         Self {
             protocol,
             request_type: "getInfo".to_owned(),
-            announced_address: settings.my_address.clone(),
+            announced_address: settings.my_address.clone().to_string(),
             application: "BRS".to_owned(), // B1 protocol requires this value
             version: BRS_VERSION.to_owned(), // Will not get a reply if the version is wrong or too old
             platform: settings.platform.clone(),

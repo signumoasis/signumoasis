@@ -16,7 +16,7 @@ pub struct B1Settings {
     /// Peer addresses to use if none are in the database already.
     pub bootstrap_peers: Vec<PeerAddress>,
     /// Address that peers should attempt to connect to.
-    pub my_address: String,
+    pub my_address: PeerAddress,
     /// A string indicating the platform in use. Often set to a signum address for SNR rewards.
     pub platform: String,
     /// Whether or not peers should pass along your address to their own peers.
