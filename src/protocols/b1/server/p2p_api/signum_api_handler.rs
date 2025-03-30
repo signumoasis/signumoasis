@@ -77,7 +77,7 @@ async fn add_peers(
             ));
         }
     }
-    // INFO: This API endpoint is supposed to return an empty JSON object.
+    // This API endpoint is supposed to return an empty JSON object.
     Ok(serde_json::json!({}))
 }
 
