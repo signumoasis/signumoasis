@@ -77,7 +77,7 @@ async fn get_peer_info(
         Err(e) if e.is_connect() => Err(PeerCommunicationError::ConnectionError(e)),
         Err(e) if e.is_timeout() => Err(PeerCommunicationError::ConnectionTimeout(e)),
         Err(e) => Err(PeerCommunicationError::UnexpectedError(
-            Err(e).context("could not get a response")?,
+            Err(e).context("unexpected peer communication error")?,
         )),
     }?;
 
