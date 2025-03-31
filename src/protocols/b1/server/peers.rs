@@ -124,8 +124,11 @@ pub async fn update_db_peer_info(
             let _response = database.update_peer_info(peer, ip, info).await?;
         }
         Err(PeerCommunicationError::ConnectionError(e)) => {
-            tracing::warn!("Connection error to peer {}. Blacklisting.", &peer,);
-            tracing::debug!("Connection error for {}: Caused by:\n\t{:#?}", &peer, e);
+            tracing::warn!(
+                "Connection error to peer {}. Blacklisting. Caused by:\n\t{:#?}",
+                &peer,
+                e
+            );
             database.increment_attempts_since_last_seen(&peer).await?;
             database.blacklist_peer(&peer).await?;
         }
@@ -133,21 +136,21 @@ pub async fn update_db_peer_info(
             // TODO: Blacklist only after a certain number of attempts_since_last_seen
             // TODO: deblacklist on every 10th attempt since last seen to give it a chance again?
             // tracing::warn!("Connection to peer {} has timed out. Blacklisting.", &peer);
-            tracing::debug!("Connection timeout for {}. Caused by: \n\t{:#?}", &peer, e);
+            tracing::warn!("Connection timeout for {}. Caused by: \n\t{:#?}", &peer, e);
 
             database.increment_attempts_since_last_seen(&peer).await?;
             // database.blacklist_peer(peer).await?;
         }
         Err(PeerCommunicationError::ContentDecodeError(e)) => {
             tracing::warn!(
-                "Peer {} response could not be properly decoded. Blacklisting peer.",
+                "Peer {} response decoding error. Blacklisting peer. Caused by:\n\t{:#?}",
                 &peer,
+                e
             );
-            tracing::debug!("Peer {} decoding error. Caused by:\n\t{:#?}", &peer, e);
             database.blacklist_peer(&peer).await?;
         }
         Err(PeerCommunicationError::UnexpectedError(e)) => {
-            tracing::error!(
+            tracing::warn!(
                 "Problem getting peer info for {}. Caused by:\n\t{:#?}",
                 &peer,
                 e

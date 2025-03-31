@@ -20,7 +20,7 @@ pub async fn client_api_handler(
     State(datastore): State<B1Datastore>,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ResponseError> {
-    tracing::debug!("query was: {:?}", &query);
+    tracing::debug!("query string was: {:?}", &query);
     let request_type = query
         .get("requestType")
         .ok_or_else(|| anyhow::anyhow!("requestType missing"))?
@@ -48,7 +48,6 @@ pub async fn get_peers(datastore: B1Datastore) -> Result<impl IntoResponse, Resp
         peers: all_peers,
         request_processing_time: 0,
     };
-    tracing::debug!("TheResult: {:#?}", &result);
     Ok(Json(result))
 }
 

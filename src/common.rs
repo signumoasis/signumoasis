@@ -31,16 +31,16 @@ pub async fn dashboard_stream() -> Result<server_fn::codec::JsonStream<Dashboard
     tracing::trace!("Got surreal stream for dashboard");
 
     let stream = server_fn::codec::JsonStream::<DashboardData>::new(dashboard.map(|n| {
-        tracing::debug!("Result<Notification>: {:#?}", &n);
+        tracing::trace!("Result<Notification>: {:#?}", &n);
         match n {
             Ok(notification) => {
                 tracing::trace!("Notification: {:#?}", &notification);
                 let result = notification.data;
-                tracing::debug!("Notification value: {:#?}", &result);
+                tracing::trace!("Notification value: {:#?}", &result);
                 Ok(result)
             }
             Err(e) => {
-                tracing::debug!("unable to get dashboard: {:#?}", &e);
+                tracing::error!("unable to get dashboard: {:#?}", &e);
                 Err(ServerFnError::new("unable to get dashboard"))
             }
         }

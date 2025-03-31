@@ -40,16 +40,15 @@ pub async fn peer_finder(mut database: B1Datastore, settings: B1Settings) -> Res
 
     // Check if we got a row AND were able to parse it
     let peer_address = if let Ok(peer_address) = peer_address {
-        // Use address from database
+        tracing::debug!("using known peer to find more peers");
         peer_address
     } else {
-        // Try address from bootstrap
+        tracing::debug!("using bootstrap list to find more peers");
         //TODO: Make this a random selection instead of just taking the first one.
         let peer = settings
             .bootstrap_peers
             .first()
-            .ok_or_else(|| anyhow::anyhow!("Unable to get peer"))?;
-        tracing::debug!("Trying the bootstrap list.");
+            .ok_or_else(|| anyhow::anyhow!("unable to get peer"))?;
         peer.to_owned()
     };
 
@@ -73,9 +72,8 @@ pub async fn peer_finder(mut database: B1Datastore, settings: B1Settings) -> Res
         match response {
             Ok(mut r) => {
                 if r.take::<Vec<String>>("announced_address").is_ok() {
-                    tracing::debug!("Saved new peer {}", &peer_address);
                     tracing::debug!(
-                        "Attempting to update peer info database for '{}'",
+                        "Saved new peer {}; attempting to update peer info",
                         &peer_address
                     );
                     tokio::spawn(

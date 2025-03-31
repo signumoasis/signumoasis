@@ -43,7 +43,7 @@ pub async fn run(settings: Settings) -> anyhow::Result<()> {
     })
         as Box<dyn Fn() -> Box<dyn std::any::Any> + Send + Sync + 'static>]);
 
-    tracing::debug!("APPSTATE: {:#?}", &axum_app_state);
+    tracing::debug!("AxumAppState: {:#?}", &axum_app_state);
     let (chain_message_tx, _chain_message_rx) = mpsc::channel::<ChainMessage>();
 
     tracing::info!("Launching web and API server");

@@ -12,7 +12,7 @@ pub fn ServerClickCounter() -> Element {
         button {
             id: "server_count_clicks",
             onclick: move |_| async move {
-                tracing::debug!("Clicked server count button");
+                tracing::trace!("Clicked server count button");
                 let _ = serverside_counter_increment().await;
                 server_count_resource.restart();
             },

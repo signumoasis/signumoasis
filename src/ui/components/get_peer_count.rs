@@ -23,7 +23,7 @@ pub fn GetPeerCount() -> Element {
                 Ok(stream) => {
                     let mut stream = stream.into_inner();
                     while let Some(Ok(data)) = stream.next().await {
-                        tracing::debug!("Component count value: {:?}", &data);
+                        tracing::trace!("Component count value: {:?}", &data);
                         *dashboard_data.write() = data;
                     }
                 }

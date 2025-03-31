@@ -18,6 +18,6 @@ pub async fn serverside_counter_get() -> Result<u32, ServerFnError> {
 pub async fn serverside_counter_increment() -> Result<(), ServerFnError> {
     let _ = GLOBAL_COUNTER.fetch_add(1, Ordering::Relaxed);
     let counter = GLOBAL_COUNTER.load(Ordering::Relaxed);
-    tracing::debug!("Global Counter: {}", counter);
+    tracing::trace!("Global Counter: {}", counter);
     Ok(())
 }

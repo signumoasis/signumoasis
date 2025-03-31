@@ -8,7 +8,7 @@ pub fn ClientClickCounter() -> Element {
         button {
             id: "count_clicks",
             onclick: move |_| {
-                tracing::debug!("Clicked client count button");
+                tracing::trace!("Clicked client count button");
                *count.write() += 1;
             },
             "CLIENT - CLICK ME!"

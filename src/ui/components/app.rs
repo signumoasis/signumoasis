@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-use tracing::debug;
 
 use crate::{
     protocols::b1::ui::B1PeerList,
@@ -8,7 +7,7 @@ use crate::{
 
 #[component]
 pub fn App() -> Element {
-    debug!("App is rendering");
+    tracing::debug!("App UI component is rendering");
     rsx! {
         p { "Hello, world" }
         GetPeerCount{}
