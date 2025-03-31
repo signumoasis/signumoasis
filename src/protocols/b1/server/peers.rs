@@ -92,9 +92,9 @@ async fn get_peer_info(
     let mut peer_info = match response.json::<ExchangeablePeerInfo>().await {
         Ok(i) => Ok(i),
         Err(e) if e.is_decode() => Err(PeerCommunicationError::ContentDecodeError(e)),
-        Err(e) => Err(PeerCommunicationError::UnexpectedError(
-            Err(e).context("could not convert body to PeerInfo")?,
-        )),
+        Err(e) => Err(e)
+            .context("could not convert body to PeerInfo")
+            .map_err(PeerCommunicationError::UnexpectedError),
     }?;
 
     // Use the peer ip if there is no announced_address
