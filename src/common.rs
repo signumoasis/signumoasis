@@ -4,7 +4,7 @@ mod datastore;
 mod response_error;
 
 #[cfg(feature = "server")]
-pub use datastore::Datastore;
+pub use datastore::*;
 #[cfg(feature = "server")]
 pub use response_error::ResponseError;
 pub mod models;
