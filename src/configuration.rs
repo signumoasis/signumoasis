@@ -6,7 +6,7 @@ use surrealdb::{
     Surreal,
 };
 
-use crate::{common::Datastore, protocols::b1::B1Settings};
+use crate::{chain::ChainSettings, common::Datastore, protocols::b1::B1Settings};
 
 #[tracing::instrument(skip_all)]
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
@@ -44,6 +44,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 pub struct Settings {
     #[cfg(feature = "server")]
     pub b1protocol: B1Settings,
+    pub chain: ChainSettings,
     pub database: DatabaseSettings,
     pub historical_moments: HistoricalMoments,
     pub node: NodeSettings,

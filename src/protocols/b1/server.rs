@@ -19,9 +19,9 @@ use peer_finder::run_peer_finder_forever;
 use peer_info_trader::run_peer_info_trader_forever;
 
 use crate::{
-    common::Datastore,
+    common::{report_exit, Datastore},
     configuration::Settings,
-    protocols::{report_exit, traits::Protocol, ChainMessage, PluginMessage},
+    protocols::{traits::Protocol, ChainMessage, PluginMessage},
 };
 
 const BRS_VERSION: &str = "3.8.4";

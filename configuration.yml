@@ -1,3 +1,5 @@
+chain:
+  placeholder: ""
 database:
   filename: "ws://localhost:8002"
 node:

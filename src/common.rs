@@ -13,6 +13,9 @@ use dioxus::prelude::*;
 use futures::StreamExt;
 use models::DashboardData;
 
+#[cfg(feature = "server")]
+use tokio::task::JoinError;
+
 #[server(endpoint = "dashboard", output = server_fn::codec::StreamingJson)]
 #[tracing::instrument(skip_all)]
 pub async fn dashboard_stream() -> Result<server_fn::codec::JsonStream<DashboardData>, ServerFnError>
@@ -54,4 +57,32 @@ pub async fn peers_list() -> Result<Vec<String>, ServerFnError> {
     let _peer_list = Vec::<String>::new();
 
     todo!()
+}
+
+#[cfg(feature = "server")]
+pub fn report_exit(
+    task_name: &str,
+    outcome: Result<Result<(), impl std::fmt::Debug + std::fmt::Display>, JoinError>,
+) {
+    match outcome {
+        Ok(Ok(())) => {
+            tracing::info!("{} has exited", task_name)
+        }
+        Ok(Err(e)) => {
+            tracing::error!(
+                error.cause_chain = ?e,
+                error.message = %e,
+                "{} failed",
+                task_name
+            )
+        }
+        Err(e) => {
+            tracing::error!(
+                error.cause_chain = ?e,
+                error.message = %e,
+                "{} task failed to complete",
+                task_name
+            )
+        }
+    }
 }

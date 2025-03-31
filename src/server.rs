@@ -8,7 +8,8 @@ use http::StatusCode;
 use tokio::net::TcpListener;
 
 use crate::{
-    common::Datastore,
+    chain::{run_chain_forever, Chain},
+    common::{report_exit, Datastore},
     configuration::Settings,
     protocols::{b1::B1Protocol, traits::Protocol, ChainMessage},
     ui::components::App,
@@ -65,6 +66,16 @@ pub async fn run(settings: Settings) -> anyhow::Result<()> {
     let listener = TcpListener::bind(&socket_address).await.unwrap();
 
     tracing::info!("Listening on {}", socket_address);
+
+    // TODO: Set up a tokio_select task branch loop here
+    let chain = Chain::new(db.into(), settings.clone().into());
+    let chain_task = tokio::spawn(run_chain_forever(chain));
+
+    // Select on all the tasks to report closure status
+    tokio::select! {
+        //o = block_downloader_task=> report_exit("Block Downloader", o),
+        o = chain_task => report_exit("Chain task exited", o),
+    };
 
     axum::serve(listener, app.into_make_service())
         .await
