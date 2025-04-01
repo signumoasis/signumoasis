@@ -1,4 +1,4 @@
-// TODO: REMOVE THIS ALLOW DEAD CODE
+// FIX: REMOVE THIS ALLOW
 #![allow(dead_code)]
 use crate::configuration::HistoricalMoments;
 

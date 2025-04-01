@@ -1,4 +1,4 @@
-// TODO: REMOVE THIS ALLOW
+// FIX: REMOVE THIS ALLOW
 #![allow(dead_code, clippy::large_enum_variant)]
 use num_bigint::BigUint;
 
