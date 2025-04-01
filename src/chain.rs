@@ -1,22 +1,35 @@
 use anyhow::Result;
+use flux_capacitor::FluxCapacitor;
 use serde::Deserialize;
 use std::time::Duration;
-use surrealdb::{engine::any::Any, sql::Block, Surreal};
+use surrealdb::{engine::any::Any, Surreal};
 use tracing::Instrument;
 use uuid::Uuid;
 
-use crate::{common::Datastore, configuration::Settings};
+use crate::{
+    common::Datastore,
+    configuration::{HistoricalMoments, Settings},
+};
 
+mod flux_capacitor;
 pub mod models;
 
 pub struct Chain {
     datastore: ChainDatastore,
     settings: ChainSettings,
+    historical_moments: HistoricalMoments,
+    flux_capacitor: FluxCapacitor,
 }
 impl Chain {
-    pub fn new(datastore: ChainDatastore, settings: ChainSettings) -> Self {
+    pub fn new(
+        datastore: ChainDatastore,
+        settings: ChainSettings,
+        historical_moments: HistoricalMoments,
+    ) -> Self {
         Self {
             datastore,
+            flux_capacitor: FluxCapacitor::new((), historical_moments.clone()),
+            historical_moments,
             settings,
         }
     }
@@ -51,7 +64,7 @@ pub struct ChainDatastore {
 }
 
 impl ChainDatastore {
-    pub async fn store_block(&self, _block: Block) {}
+    //pub async fn store_block(&self, _block: Block) {}
     pub async fn get_blocks_from_height(&self, _height: u64, _number_of_blocks: u64) {}
     pub async fn get_block_by_id(&self, _block_id: u64) {}
 }
@@ -74,5 +87,6 @@ impl From<Settings> for ChainSettings {
         value.chain
     }
 }
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct HistoricalMoment(u32);
