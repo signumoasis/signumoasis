@@ -9,11 +9,12 @@ use super::b1_transaction::B1Transaction;
 pub struct B1Block {
     version: u8,
 
-    /// Some number since Signum's start epoch
+    /// Seconds since Signum's Genesis Block
     timestamp: u64,
 
     #[serde_as(as = "DisplayFromStr")]
-    previous_block: u64,
+    #[serde(rename = "previousBlock")]
+    previous_block_id: u64,
 
     #[serde(rename = "totalAmountNQT")]
     total_amount_nqt: u64,
