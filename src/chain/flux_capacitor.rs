@@ -117,6 +117,12 @@ impl FluxEnable {
     }
 
     /// Gets the height at which this FluxEnable takes effect.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if there is a missing or empty changes vec.
+    /// While that case should never happen, it's possible if creating the FluxEnable
+    /// using the `new()` method and passing `None` or an empty vec.
     pub fn get_enable_height(&self) -> HistoricalMoment {
         self.changes
             .as_ref()
