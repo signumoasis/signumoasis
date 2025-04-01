@@ -13,20 +13,14 @@ pub struct FluxCapacitor {
 impl FluxCapacitor {
     /// Creates a new FluxCapacitor.
     pub fn new(chain_channel: (), historical_moments: HistoricalMoments) -> Self {
-        // NOTE: These four lines are just to test if the code is valid and will be removed.
-        // They will not be used here. Just a syntax/build check to see if 'test' exists
-        // on the FluxValue<bool>.
-        let x = FluxValue::new(2u32, None);
-        let y = FluxEnable::new(true, None);
-        //let z = x.test();
-        let g = y.test();
         Self {
             chain_channel,
             historical_moments,
         }
     }
 
-    /// Retrieves the value of a FluxValue at a specific height.
+    /// Retrieves the value of a FluxValue at a specific height. Pass the current
+    /// chain height to get the latest value.
     pub fn get_value_at<T: Clone>(flux_value: FluxValue<T>, height: u32) -> T {
         if let Some(changes) = flux_value.get_changes() {
             let mut value_at_height = flux_value.get_default_value();
@@ -46,7 +40,7 @@ impl FluxCapacitor {
     }
 
     pub fn get_starting_height(flux_enable: FluxEnable) -> u32 {
-        todo!()
+        flux_enable.get_enable_height().0
     }
 }
 
@@ -101,10 +95,35 @@ impl<T: Clone> FluxValue<T> {
     }
 }
 
+/// A type alias for FluxValue<bool>. This type has additional capability over
+/// the generic. Instead of the 'new' method, you should use the 'enable' method for this.
+///
+/// # Example
+///
+/// ```
+/// let reward_recipient = FluxEnable::enable(historical_moments.reward_recipient_enable);
+///
+/// let enable_height = reward_recipient.get_enable_height();
+/// ```
 pub type FluxEnable = FluxValue<bool>;
-impl FluxValue<bool> {
-    pub fn test() -> bool {
-        true
+
+impl FluxEnable {
+    /// Create an new FluxEnable that begins at the specified height..
+    pub fn enable(enable_height: HistoricalMoment) -> Self {
+        Self::new(
+            false,
+            Some(vec![ValueAtHeight::new(enable_height.clone(), true)]),
+        )
+    }
+
+    /// Gets the height at which this FluxEnable takes effect.
+    pub fn get_enable_height(&self) -> HistoricalMoment {
+        self.changes
+            .as_ref()
+            .expect("somehow FluxEnable has no 'changes' collection")
+            .first()
+            .expect("the FluxEnable collection was empty")
+            .get_historical_moment()
     }
 }
 

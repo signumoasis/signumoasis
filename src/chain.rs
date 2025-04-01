@@ -1,5 +1,4 @@
 use anyhow::Result;
-use flux_capacitor::FluxCapacitor;
 use serde::Deserialize;
 use std::time::Duration;
 use surrealdb::{engine::any::Any, Surreal};
@@ -12,6 +11,8 @@ use crate::{
 };
 
 mod flux_capacitor;
+pub use flux_capacitor::*;
+
 pub mod models;
 
 pub struct Chain {
@@ -88,5 +89,5 @@ impl From<Settings> for ChainSettings {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 pub struct HistoricalMoment(u32);
