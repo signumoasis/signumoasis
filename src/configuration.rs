@@ -6,7 +6,11 @@ use surrealdb::{
     Surreal,
 };
 
-use crate::{chain::ChainSettings, common::Datastore, protocols::b1::B1Settings};
+use crate::{
+    chain::{ChainSettings, HistoricalMoment},
+    common::Datastore,
+    protocols::b1::B1Settings,
+};
 
 #[tracing::instrument(skip_all)]
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
@@ -139,28 +143,28 @@ async fn initialize_database(db: Surreal<Any>) -> Result<Surreal<Any>, anyhow::E
 /// This settings struct represents any overrides for the historical moments. All values are optional.
 #[derive(Clone, Debug, Deserialize)]
 pub struct HistoricalMoments {
-    pub genesis: u32,
-    pub reward_recipient_enable: u32,
-    pub digital_goods_store_enable: u32,
-    pub automated_transaction_enable: u32,
-    pub automated_transaction_fix_1: u32,
-    pub automated_transaction_fix_2: u32,
-    pub automated_transaction_fix_3: u32,
-    pub pre_poc2: u32,
-    pub poc2_enable: u32,
-    pub sodium_enable: u32,
-    pub signum_name_change: u32,
-    pub poc_plus_enable: u32,
-    pub speedway_enable: u32,
-    pub smart_token_enable: u32,
-    pub smart_fees_enable: u32,
-    pub smart_ats_enable: u32,
-    pub automated_transaction_fix_4: u32,
-    pub distribution_fix_enable: u32,
-    pub pk_freeze: u32,
-    pub pk_freeze_2: u32,
-    pub smart_alias_enable: u32,
-    pub next_fork: u32,
+    pub genesis: HistoricalMoment,
+    pub reward_recipient_enable: HistoricalMoment,
+    pub digital_goods_store_enable: HistoricalMoment,
+    pub automated_transaction_enable: HistoricalMoment,
+    pub automated_transaction_fix_1: HistoricalMoment,
+    pub automated_transaction_fix_2: HistoricalMoment,
+    pub automated_transaction_fix_3: HistoricalMoment,
+    pub pre_poc2: HistoricalMoment,
+    pub poc2_enable: HistoricalMoment,
+    pub sodium_enable: HistoricalMoment,
+    pub signum_name_change: HistoricalMoment,
+    pub poc_plus_enable: HistoricalMoment,
+    pub speedway_enable: HistoricalMoment,
+    pub smart_token_enable: HistoricalMoment,
+    pub smart_fees_enable: HistoricalMoment,
+    pub smart_ats_enable: HistoricalMoment,
+    pub automated_transaction_fix_4: HistoricalMoment,
+    pub distribution_fix_enable: HistoricalMoment,
+    pub pk_freeze: HistoricalMoment,
+    pub pk_freeze_2: HistoricalMoment,
+    pub smart_alias_enable: HistoricalMoment,
+    pub next_fork: HistoricalMoment,
 }
 
 // Defaults for HistoricalMoments

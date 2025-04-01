@@ -74,3 +74,5 @@ impl From<Settings> for ChainSettings {
         value.chain
     }
 }
+#[derive(Clone, Debug, Deserialize)]
+pub struct HistoricalMoment(u32);
