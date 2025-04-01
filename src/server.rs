@@ -68,7 +68,11 @@ pub async fn run(settings: Settings) -> anyhow::Result<()> {
     tracing::info!("Listening on {}", socket_address);
 
     // TODO: Set up a tokio_select task branch loop here
-    let chain = Chain::new(db.into(), settings.clone().into());
+    let chain = Chain::new(
+        db.into(),
+        settings.clone().into(),
+        settings.historical_moments.clone(),
+    );
     let chain_task = tokio::spawn(run_chain_forever(chain));
 
     // Select on all the tasks to report closure status
