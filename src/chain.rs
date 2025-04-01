@@ -1,3 +1,5 @@
+// TODO: REMOVE THIS ALLOW
+#![allow(dead_code)]
 use anyhow::Result;
 use serde::Deserialize;
 use std::time::Duration;

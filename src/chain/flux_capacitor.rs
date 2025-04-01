@@ -110,10 +110,7 @@ pub type FluxEnable = FluxValue<bool>;
 impl FluxEnable {
     /// Create an new FluxEnable that begins at the specified height..
     pub fn enable(enable_height: HistoricalMoment) -> Self {
-        Self::new(
-            false,
-            Some(vec![ValueAtHeight::new(enable_height.clone(), true)]),
-        )
+        Self::new(false, Some(vec![ValueAtHeight::new(enable_height, true)]))
     }
 
     /// Gets the height at which this FluxEnable takes effect.
@@ -152,7 +149,7 @@ impl<T: Clone> ValueAtHeight<T> {
 
     /// Get the historical moment at which this value begins being active.
     pub fn get_historical_moment(&self) -> HistoricalMoment {
-        self.historical_moment.clone()
+        self.historical_moment
     }
 
     /// Get the value.

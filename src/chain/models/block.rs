@@ -1,3 +1,5 @@
+// TODO: REMOVE THIS ALLOW
+#![allow(dead_code, clippy::large_enum_variant)]
 use num_bigint::BigUint;
 
 pub enum Block {
