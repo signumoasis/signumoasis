@@ -6,8 +6,8 @@ pub enum Transaction {
     V1 {
         #[serde(rename = "type")]
         transaction_type: TransactionType,
-        timestamp: u32,
-        deadline: u32,
+        timestamp: u64,
+        deadline: u16,
         sender_public_key: Vec<u8>,
         recipient: (),
         recipient_rs: (),
