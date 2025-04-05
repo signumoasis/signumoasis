@@ -55,10 +55,6 @@ pub enum Block {
         total_amount_nqt: u64,
         /// The total amount of fees in this block expressed as NQT
         total_fee_nqt: u64,
-        /// The total amount of Signa going to cashback in this block expressed as NQT
-        total_fee_cashback_nqt: u64,
-        /// The total amount of Signa burned in this block expressed as NQT
-        total_fee_burnt_nqt: u64,
         /// The total length of the block payload
         payload_length: u32,
         /// The hash of the payload
@@ -391,10 +387,6 @@ impl<'de> Deserialize<'de> for Block {
                             .ok_or_else(|| de::Error::missing_field("total_amount_nqt"))?,
                         total_fee_nqt: total_fee_nqt_u64
                             .ok_or_else(|| de::Error::missing_field("total_fee_nqt"))?,
-                        total_fee_cashback_nqt: total_fee_cashback_nqt
-                            .ok_or_else(|| de::Error::missing_field("total_fee_cashback_nqt"))?,
-                        total_fee_burnt_nqt: total_fee_burnt_nqt
-                            .ok_or_else(|| de::Error::missing_field("total_fee_burnt_nqt"))?,
                         payload_length: payload_length
                             .ok_or_else(|| de::Error::missing_field("payload_length"))?,
                         payload_hash: payload_hash
