@@ -6,6 +6,9 @@ use serde::Deserialize;
 use super::Transaction;
 
 pub enum Block {
+    /// The genesis block of Signum. This variant is needed to parse the genesis block and provide
+    /// it to the client API but should never be serialized to the peer-to-peer transfers. Every
+    /// node will generate it deterministically, instead.
     Genesis {
         /// Seconds since Signum's Genesis Block
         timestamp: u32,
@@ -46,6 +49,7 @@ pub enum Block {
         /// The numerical id of the account that forged this block
         generator_id: u64,
     },
+    /// Version 3 of the block. This is the oldest version in the Signum chain.
     V3 {
         /// Seconds since Signum's Genesis Block
         timestamp: u32,
@@ -86,6 +90,7 @@ pub enum Block {
         /// The numerical id of the account that forged this block
         generator_id: u64,
     },
+    /// Version 4 of the block. Adds the fields `total_fee_cashback_nqt` and `total_fee_burnt_nqt`.
     V4 {
         /// Seconds since Signum's Genesis Block
         timestamp: u32,
@@ -138,7 +143,6 @@ impl<'de> Deserialize<'de> for Block {
         D: serde::Deserializer<'de>,
     {
         use serde::de::{self, MapAccess, Visitor};
-        use std::fmt;
 
         // Define a visitor for the enum
         struct BlockVisitor;
