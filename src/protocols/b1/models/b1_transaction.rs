@@ -2,7 +2,9 @@ use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 
 use crate::chain::models::{
-    ColoredCoinsSubtype, MessageSubtype, PaymentSubtype, Transaction, TransactionType,
+    AccountControlSubtype, AdvancedPaymentSubtype, AutomatedTransactionsSubtype,
+    ColoredCoinsSubtype, DigitalGoodsSubtype, MessageSubtype, PaymentSubtype, SignaMiningSubtype,
+    Transaction, TransactionType,
 };
 
 #[serde_as]
@@ -14,7 +16,7 @@ pub struct B1Transaction {
     pub subtype: u8,
     pub timestamp: u64,
     pub deadline: u16,
-    pub sender_public_key: String,
+    pub sender_public_key: Vec<u8>,
     #[serde_as(as = "Option<DisplayFromStr>")]
     pub recipient: Option<u64>, // TODO Why is this an Option? Are transaction recipients optional?
     #[serde(rename = "amountNQT")]
@@ -108,9 +110,100 @@ impl TryFrom<B1Transaction> for Transaction {
             TYPE_COLORED_COINS if value.subtype == SUBTYPE_COLORED_COINS_TRANSFER_OWNERSHIP => {
                 TransactionType::ColoredCoins(ColoredCoinsSubtype::TransferOwnership)
             }
+            TYPE_DIGITAL_GOODS if value.subtype == SUBTYPE_DIGITAL_GOODS_LISTING => {
+                TransactionType::DigitalGoods(DigitalGoodsSubtype::Listing)
+            }
+            TYPE_DIGITAL_GOODS if value.subtype == SUBTYPE_DIGITAL_GOODS_DELISTING => {
+                TransactionType::DigitalGoods(DigitalGoodsSubtype::Delisting)
+            }
+            TYPE_DIGITAL_GOODS if value.subtype == SUBTYPE_DIGITAL_GOODS_PRICE_CHANGE => {
+                TransactionType::DigitalGoods(DigitalGoodsSubtype::PriceChange)
+            }
+            TYPE_DIGITAL_GOODS if value.subtype == SUBTYPE_DIGITAL_GOODS_QUANTITY_CHANGE => {
+                TransactionType::DigitalGoods(DigitalGoodsSubtype::QuantityChange)
+            }
+            TYPE_DIGITAL_GOODS if value.subtype == SUBTYPE_DIGITAL_GOODS_PURCHASE => {
+                TransactionType::DigitalGoods(DigitalGoodsSubtype::Purchase)
+            }
+            TYPE_DIGITAL_GOODS if value.subtype == SUBTYPE_DIGITAL_GOODS_DELIVERY => {
+                TransactionType::DigitalGoods(DigitalGoodsSubtype::Delivery)
+            }
+            TYPE_DIGITAL_GOODS if value.subtype == SUBTYPE_DIGITAL_GOODS_FEEDBACK => {
+                TransactionType::DigitalGoods(DigitalGoodsSubtype::Feedback)
+            }
+            TYPE_DIGITAL_GOODS if value.subtype == SUBTYPE_DIGITAL_GOODS_REFUND => {
+                TransactionType::DigitalGoods(DigitalGoodsSubtype::Refund)
+            }
+            TYPE_ACCOUNT_CONTROL
+                if value.subtype == SUBTYPE_ACCOUNT_CONTROL_EFFECTIVE_BALANCE_LEASING =>
+            {
+                TransactionType::AccountControl(AccountControlSubtype::EffectiveBalanceLeasing)
+            }
+            TYPE_SIGNA_MINING
+                if value.subtype == SUBTYPE_SIGNA_MINING_REWARD_RECIPIENT_ASSIGNMENT =>
+            {
+                TransactionType::SignaMining(SignaMiningSubtype::RewardRecipientAssignment)
+            }
+            TYPE_SIGNA_MINING if value.subtype == SUBTYPE_SIGNA_MINING_COMMITMENT_ADD => {
+                TransactionType::SignaMining(SignaMiningSubtype::CommitmentAdd)
+            }
+            TYPE_SIGNA_MINING if value.subtype == SUBTYPE_SIGNA_MINING_COMMITMENT_REMOVE => {
+                TransactionType::SignaMining(SignaMiningSubtype::CommitmentRemove)
+            }
+            TYPE_ADVANCED_PAYMENT if value.subtype == SUBTYPE_ADVANCED_PAYMENT_ESCROW_CREATION => {
+                TransactionType::AdvancedPayment(AdvancedPaymentSubtype::EscrowCreation)
+            }
+            TYPE_ADVANCED_PAYMENT if value.subtype == SUBTYPE_ADVANCED_PAYMENT_ESCROW_SIGN => {
+                TransactionType::AdvancedPayment(AdvancedPaymentSubtype::EscrowSign)
+            }
+            TYPE_ADVANCED_PAYMENT if value.subtype == SUBTYPE_ADVANCED_PAYMENT_ESCROW_RESULT => {
+                TransactionType::AdvancedPayment(AdvancedPaymentSubtype::EscrowResult)
+            }
+            TYPE_ADVANCED_PAYMENT
+                if value.subtype == SUBTYPE_ADVANCED_PAYMENT_SUBSCRIPTION_SUBSCRIBE =>
+            {
+                TransactionType::AdvancedPayment(AdvancedPaymentSubtype::SubscriptionSubscribe)
+            }
+            TYPE_ADVANCED_PAYMENT
+                if value.subtype == SUBTYPE_ADVANCED_PAYMENT_SUBSCRIPTION_CANCEL =>
+            {
+                TransactionType::AdvancedPayment(AdvancedPaymentSubtype::SubscriptionCancel)
+            }
+            TYPE_ADVANCED_PAYMENT
+                if value.subtype == SUBTYPE_ADVANCED_PAYMENT_SUBSCRIPTION_PAYMENT =>
+            {
+                TransactionType::AdvancedPayment(AdvancedPaymentSubtype::SubscriptionPayment)
+            }
+            TYPE_AUTOMATED_TRANSACTIONS if value.subtype == SUBTYPE_AT_CREATION => {
+                TransactionType::AutomatedTransactions(AutomatedTransactionsSubtype::Creation)
+            }
+            TYPE_AUTOMATED_TRANSACTIONS if value.subtype == SUBTYPE_AT_NXT_PAYMENT => {
+                TransactionType::AutomatedTransactions(AutomatedTransactionsSubtype::NxtPayment)
+            }
             _ => {
                 anyhow::bail!("unable to convert B1Transaction to Transaction");
             }
+        };
+        let t = Transaction::V1 {
+            transaction_type,
+            timestamp: value.timestamp,
+            deadline: value.deadline,
+            sender_public_key: value.sender_public_key,
+            recipient: value.recipient,
+            recipient_rs: value.recipient_rs,
+            amount_nqt: value.amount_nqt,
+            fee_nqt: value.fee_nqt,
+            signature: value.signature,
+            signature_hash: value.signature_hash,
+            full_hash: value.full_hash,
+            transaction: value.transaction,
+            sender: value.sender,
+            sender_rs: value.sender_rs,
+            height: value.height,
+            version: value.version,
+            ec_block_height: value.ec_block_height,
+            cash_back_id: value.cash_back_id,
+            verify: value.verify,
         };
         todo!() // TODO: construct and return a transaction based on type
     }
