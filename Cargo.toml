@@ -49,6 +49,7 @@ uuid = { version = "1.12.1", features = ["js", "serde", "v4"] }
 wasm-bindgen = "=0.2.100"
 web-sys = "0.3.77"
 wasm-bindgen-futures = "0.4.50"
+jiff = { version = "0.2.5", features = ["serde"] }
 
 # [dev-dependencies]
 # once_cell = "1.19.0"
