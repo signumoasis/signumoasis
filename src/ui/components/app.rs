@@ -1,9 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::{
-    protocols::b1::ui::B1PeerList,
-    ui::components::{ClientClickCounter, GetPeerCount, ServerClickCounter},
-};
+use crate::ui::components::{ClientClickCounter, GetPeerCount, ServerClickCounter};
 
 #[component]
 pub fn App() -> Element {
@@ -11,7 +8,6 @@ pub fn App() -> Element {
     rsx! {
         p { "Hello, world" }
         GetPeerCount{}
-        B1PeerList{}
         ClientClickCounter{}
         ServerClickCounter{}
     }

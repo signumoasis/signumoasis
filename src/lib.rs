@@ -1,7 +1,7 @@
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "server")]
 pub mod chain;
 pub mod common;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "server")]
 pub mod configuration;
 pub mod protocols;
 pub mod server;

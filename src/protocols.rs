@@ -1,5 +1,6 @@
 use std::sync::mpsc;
 
+#[cfg(feature = "server")]
 pub mod b1;
 pub mod traits;
 
