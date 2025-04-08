@@ -25,11 +25,15 @@ fn main() -> anyhow::Result<()> {
     // INFO: Do things only necessary on the server
     #[cfg(feature = "server")]
     {
+        use signum_oasis::chain::flux_values::*;
         tracing::info!("Launching server");
 
         tracing::info!("Loading settings");
         let settings =
             signum_oasis::configuration::get_configuration().expect("unable to load settings");
+
+        // Set the global FluxValues
+        set_flux_values(settings.historical_moments.clone())?;
 
         use signum_oasis::server;
         let runner = tokio::runtime::Runtime::new().expect("unable to get a tokio runtime");

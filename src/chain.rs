@@ -21,7 +21,6 @@ pub struct Chain {
     datastore: ChainDatastore,
     settings: ChainSettings,
     historical_moments: HistoricalMoments,
-    flux_capacitor: FluxCapacitor,
 }
 impl Chain {
     pub fn new(
@@ -31,7 +30,6 @@ impl Chain {
     ) -> Self {
         Self {
             datastore,
-            flux_capacitor: FluxCapacitor::new((), historical_moments.clone()),
             historical_moments,
             settings,
         }
