@@ -4,7 +4,7 @@ use serde_with::{serde_as, DisplayFromStr};
 use crate::chain::models::{
     AccountControlSubtype, AdvancedPaymentSubtype, AutomatedTransactionsSubtype,
     ColoredCoinsSubtype, DigitalGoodsSubtype, MessageSubtype, PaymentSubtype, SignaMiningSubtype,
-    Transaction, TransactionType,
+    Transaction, TransactionBuilder, TransactionType,
 };
 
 #[serde_as]
@@ -13,27 +13,38 @@ use crate::chain::models::{
 pub struct B1Transaction {
     #[serde(rename = "type")]
     pub transaction_type: u8,
+
     pub subtype: u8,
-    pub timestamp: u64,
+    pub timestamp: u32,
     pub deadline: u16,
     pub sender_public_key: Vec<u8>,
+
     #[serde_as(as = "Option<DisplayFromStr>")]
-    pub recipient: Option<u64>, // TODO Why is this an Option? Are transaction recipients optional?
+    pub recipient: Option<u64>, // INFO: Optional because only some types of transactions have a recipient
+
     #[serde(rename = "amountNQT")]
     pub amount_nqt: u64,
+
     #[serde(rename = "feeNQT")]
     pub fee_nqt: u64,
-    //pub referenced_transaction_full_hash: String,
+
+    pub referenced_transaction_full_hash: Option<String>, // INFO: Only some transactions reference other transactions
+
     #[serde(rename = "ecBlockHeight")]
     pub ec_block_height: u32,
+
     #[serde(rename = "ecBlockId")]
     #[serde_as(as = "DisplayFromStr")]
     pub ec_block_id: u64,
+
     #[serde(rename = "cashBackId")]
     #[serde_as(as = "DisplayFromStr")]
     pub cash_back_id: u64,
-    pub signature: String,
-    //pub attachment: Vec<B1TransactionAttachment>,
+
+    /// Must deserialize from a base64 encode to a byte array
+    pub signature: Vec<u8>,
+
+    pub attachment: Vec<B1TransactionAttachment>,
     pub version: u8,
 }
 
@@ -184,27 +195,61 @@ impl TryFrom<B1Transaction> for Transaction {
                 anyhow::bail!("unable to convert B1Transaction to Transaction");
             }
         };
-        let t = Transaction::V1 {
-            transaction_type,
-            timestamp: value.timestamp,
-            deadline: value.deadline,
-            sender_public_key: value.sender_public_key,
-            recipient: value.recipient,
-            recipient_rs: value.recipient_rs,
-            amount_nqt: value.amount_nqt,
-            fee_nqt: value.fee_nqt,
-            signature: value.signature,
-            signature_hash: value.signature_hash,
-            full_hash: value.full_hash,
-            transaction: value.transaction,
-            sender: value.sender,
-            sender_rs: value.sender_rs,
-            height: value.height,
-            version: value.version,
-            ec_block_height: value.ec_block_height,
-            cash_back_id: value.cash_back_id,
-            verify: value.verify,
+        let t = match value.version {
+            0 => {
+                let x = TransactionBuilder::new()
+                    .version0()
+                    .set_type(transaction_type)
+                    .set_amount_nqt(value.amount_nqt)
+                    .set_fee_nqt(value.fee_nqt)
+                    .set_timestamp(value.timestamp)
+                    .set_deadline(value.deadline)
+                    .set_sender_public_key(value.sender_public_key);
+                // TODO: Add attachments here -- loop/fold the b1 attachments
+                x.build()
+            }
+            1 => {
+                let x = TransactionBuilder::new()
+                    .version1()
+                    .set_type(transaction_type)
+                    .set_amount_nqt(value.amount_nqt)
+                    .set_fee_nqt(value.fee_nqt)
+                    .set_timestamp(value.timestamp)
+                    .set_deadline(value.deadline)
+                    .set_sender_public_key(value.sender_public_key);
+                // TODO: Add attachments here -- loop/fold the b1 attachments
+                x.build()
+            }
+            2 => {
+                let x = TransactionBuilder::new()
+                    .version2()
+                    .set_type(transaction_type)
+                    .set_amount_nqt(value.amount_nqt)
+                    .set_fee_nqt(value.fee_nqt)
+                    .set_timestamp(value.timestamp)
+                    .set_deadline(value.deadline)
+                    .set_sender_public_key(value.sender_public_key);
+                // TODO: Add attachments here -- loop/fold the b1 attachments
+                x.build()
+            }
+            _ => {
+                anyhow::bail!("unsupported transaction version");
+            }
         };
+
+        // let t = Transaction::V1 {
+        //     transaction_type,
+        //     timestamp: value.timestamp,
+        //     deadline: value.deadline,
+        //     sender_public_key: value.sender_public_key,
+        //     recipient: value.recipient,
+        //     amount_nqt: value.amount_nqt,
+        //     fee_nqt: value.fee_nqt,
+        //     signature: value.signature,
+        //     version: value.version,
+        //     ec_block_height: value.ec_block_height,
+        //     cash_back_id: value.cash_back_id,
+        // };
         todo!() // TODO: construct and return a transaction based on type
     }
 }
