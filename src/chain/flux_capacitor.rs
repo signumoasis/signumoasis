@@ -1,21 +1,139 @@
 // FIX: REMOVE THIS ALLOW
 #![allow(dead_code)]
+use dioxus::prelude::history;
+
 use crate::configuration::HistoricalMoments;
 
 use super::HistoricalMoment;
 
 /// A technique to handle values that change over the history of the blockchain.
 pub struct FluxCapacitor {
-    chain_channel: (),
-    historical_moments: HistoricalMoments,
+    // TODO: Need to figure out if this is needed.
+    // chain_channel: (),
+    pub reward_recipient_enable: FluxEnable,
+    pub digital_goods_store_enable: FluxEnable,
+    pub automated_transaction_enable: FluxEnable,
+    pub automated_transaction_fix_1: FluxEnable,
+    pub automated_transaction_fix_2: FluxEnable,
+    pub automated_transaction_fix_3: FluxEnable,
+    pub pre_poc2: FluxEnable,
+    pub poc2_enable: FluxEnable,
+    pub sodium_enable: FluxEnable,
+    pub signum_name_change: FluxEnable,
+    pub poc_plus_enable: FluxEnable,
+    pub speedway_enable: FluxEnable,
+    pub smart_token_enable: FluxEnable,
+    pub smart_fees_enable: FluxEnable,
+    pub smart_ats_enable: FluxEnable,
+    pub automated_transaction_fix_4: FluxEnable,
+    pub distribution_fix_enable: FluxEnable,
+    pub pk_freeze: FluxEnable,
+    pub pk_freeze_2: FluxEnable,
+    pub smart_alias_enable: FluxEnable,
+    pub next_fork: FluxEnable,
+    pub block_time: FluxValue<u32>,
+    pub fee_quant: FluxValue<u64>,
+    pub automated_transaction_version: FluxValue<u16>,
+    pub max_number_transactions: FluxValue<u32>,
+    pub max_payload_length: FluxValue<u32>,
+    pub min_capacity: FluxValue<u64>,
+    pub commitment_wait: FluxValue<u32>,
+    pub average_commitment_window: FluxValue<u64>,
+    // TODO: See if I need this. Represents changes to the min required peer version in B1.
+    // Might be something to set directly in B1?
+    // pub min_peer_version: FluxValue<Version>,
 }
 
+// TODO: See if we even need a struct flux capacitor. These methods can all exist on FluxValue directly
+// and if using the global OnceCell method you grokked, you might not need this at all.
 impl FluxCapacitor {
     /// Creates a new FluxCapacitor.
-    pub fn new(chain_channel: (), historical_moments: HistoricalMoments) -> Self {
+    pub fn new(
+        // chain_channel: (),
+        historical_moments: HistoricalMoments,
+    ) -> Self {
         Self {
-            chain_channel,
-            historical_moments,
+            // chain_channel,
+            digital_goods_store_enable: FluxEnable::enable(
+                historical_moments.digital_goods_store_enable,
+            ),
+            reward_recipient_enable: FluxEnable::enable(historical_moments.reward_recipient_enable),
+            automated_transaction_enable: FluxEnable::enable(
+                historical_moments.automated_transaction_enable,
+            ),
+            automated_transaction_fix_1: FluxEnable::enable(
+                historical_moments.automated_transaction_fix_1,
+            ),
+            automated_transaction_fix_2: FluxEnable::enable(
+                historical_moments.automated_transaction_fix_2,
+            ),
+            automated_transaction_fix_3: FluxEnable::enable(
+                historical_moments.automated_transaction_fix_3,
+            ),
+            pre_poc2: FluxEnable::enable(historical_moments.pre_poc2),
+            poc2_enable: FluxEnable::enable(historical_moments.poc2_enable),
+            sodium_enable: FluxEnable::enable(historical_moments.sodium_enable),
+            signum_name_change: FluxEnable::enable(historical_moments.signum_name_change),
+            poc_plus_enable: FluxEnable::enable(historical_moments.poc_plus_enable),
+            speedway_enable: FluxEnable::enable(historical_moments.speedway_enable),
+            smart_token_enable: FluxEnable::enable(historical_moments.smart_token_enable),
+            smart_fees_enable: FluxEnable::enable(historical_moments.smart_fees_enable),
+            smart_ats_enable: FluxEnable::enable(historical_moments.smart_ats_enable),
+            automated_transaction_fix_4: FluxEnable::enable(
+                historical_moments.automated_transaction_fix_4,
+            ),
+            distribution_fix_enable: FluxEnable::enable(historical_moments.distribution_fix_enable),
+            pk_freeze: FluxEnable::enable(historical_moments.pk_freeze),
+            pk_freeze_2: FluxEnable::enable(historical_moments.pk_freeze_2),
+            smart_alias_enable: FluxEnable::enable(historical_moments.smart_alias_enable),
+            next_fork: FluxEnable::enable(historical_moments.next_fork),
+            block_time: FluxValue::new(240, None),
+            fee_quant: FluxValue::new(
+                100_000_000u64,
+                Some(vec![
+                    ValueAtHeight::new(historical_moments.pre_poc2, 735_000u64),
+                    ValueAtHeight::new(historical_moments.smart_fees_enable, 1_000_000u64),
+                ]),
+            ),
+            automated_transaction_version: FluxValue::new(
+                1,
+                Some(vec![
+                    ValueAtHeight::new(historical_moments.sodium_enable, 2u16),
+                    ValueAtHeight::new(historical_moments.smart_ats_enable, 3u16),
+                ]),
+            ),
+            max_number_transactions: FluxValue::new(
+                255,
+                Some(vec![
+                    ValueAtHeight::new(historical_moments.pre_poc2, 255 * 4),
+                    ValueAtHeight::new(historical_moments.smart_fees_enable, 255 * 4 * 2),
+                ]),
+            ),
+            max_payload_length: FluxValue::new(
+                255 * 176,
+                Some(vec![
+                    ValueAtHeight::new(historical_moments.pre_poc2, 255 * 176 * 4),
+                    ValueAtHeight::new(
+                        historical_moments.smart_fees_enable,
+                        255 * (176 + 8) * 4 * 2,
+                    ),
+                ]),
+            ),
+            min_capacity: FluxValue::new(1000u64, None),
+            commitment_wait: FluxValue::new(
+                60,
+                Some(vec![ValueAtHeight::new(
+                    historical_moments.smart_ats_enable,
+                    1440,
+                )]),
+            ),
+            average_commitment_window: FluxValue::new(
+                24u64,
+                Some(vec![ValueAtHeight::new(
+                    historical_moments.speedway_enable,
+                    96u64,
+                )]),
+            ),
         }
     }
 
@@ -71,7 +189,7 @@ impl<T: Clone> FluxValue<T> {
     }
 
     // TODO: Not sure update_height_values is even needed.
-    // SRS uses this to changev alues in the TestNetwork.java class but SignumOasis may
+    // SRS uses this to change values in the TestNetwork.java class but SignumOasis may
     // not need it. Seems to be used because some of the values that flux are different instead
     // of just the points where they shift. Would prefer to take a list from a config.
 
